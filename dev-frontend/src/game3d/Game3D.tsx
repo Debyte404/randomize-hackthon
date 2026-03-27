@@ -29,7 +29,8 @@ export default function Game3D() {
   const [narratorText, setNarratorText] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [escMenuOpen, setEscMenuOpen] = useState(false);
-  const [unlockedLevels, setUnlockedLevels] = useState<string[]>(['street']);
+  // DEV MODE: All levels initially unlocked for easier testing. Will revert later.
+  const [unlockedLevels, setUnlockedLevels] = useState<string[]>(['street', 'lobby', 'interview', 'office', 'desk']);
 
   // Refs to hold mutable game state
   const sceneManagerRef = useRef<SceneManager | null>(null);
