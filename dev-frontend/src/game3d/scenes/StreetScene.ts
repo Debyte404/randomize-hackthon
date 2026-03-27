@@ -347,9 +347,9 @@ export class StreetScene implements GameScene {
       const reach = createBox(1.2, 0.1, 0.1, 0x222222, [-6.6, 4, zOffset]);
       const lamp = createBox(0.3, 0.1, 0.2, 0xddddaa, [-7.1, 3.95, zOffset]);
       
-      // const pLight = new THREE.PointLight(0xffddaa, 0.8, 10);
-      // pLight.position.set(-7.1, 3.5, zOffset);
-      // ctx.scene.add(pLight);
+            
+      ctx.scene.add(pole);
+      ctx.scene.add(reach);
       ctx.scene.add(lamp);
     }
 

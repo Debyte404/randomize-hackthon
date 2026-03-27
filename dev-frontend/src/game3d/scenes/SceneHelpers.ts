@@ -355,7 +355,7 @@ export function createTextSign(
 ): THREE.Mesh {
   const canvas = document.createElement('canvas');
   // High resolution for clear text, scaled up by 4
-  const scale = 4;
+  const scale = 8;
   canvas.width = 512 * scale;
   canvas.height = Math.floor(512 * scale * (height / width));
   const ctx = canvas.getContext('2d')!;
@@ -406,34 +406,46 @@ export function createTextSign(
   // Use LinearFilter for high-res text, it looks so much better when scaled down.
   // We're dropping NearestFilter here specifically for signs so they remain readable
   // despite the whole screen getting pixelated.
-  texture.generateMipmaps = false;
-  texture.minFilter = THREE.LinearFilter;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
   texture.magFilter = THREE.LinearFilter;
-  texture.anisotropy = 16;
-
+  texture.anisotropy = 4;
+  
   const geo = new THREE.PlaneGeometry(width, height);
-  const mat = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+  const mat = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.9, transparent: true });
   return new THREE.Mesh(geo, mat);
 }
 
 export function addLighting(scene: THREE.Scene) {
-  // Main directional light — no shadows for performance
-  const dir = new THREE.DirectionalLight(0xfff5e6, 2.8);
+  // Stark fluorescent directional (main office light)
+  const dir = new THREE.DirectionalLight(0xfff5e6, 2.5);
   dir.position.set(5, 10, 3);
-  dir.castShadow = false;
+  dir.castShadow = true;
+  dir.shadow.mapSize.width = 2048;
+  dir.shadow.mapSize.height = 2048;
+  dir.shadow.camera.near = 0.5;
+  dir.shadow.camera.far = 50;
+  dir.shadow.camera.left = -15;
+  dir.shadow.camera.right = 15;
+  dir.shadow.camera.top = 15;
+  dir.shadow.camera.bottom = -15;
+  dir.shadow.bias = -0.0005;
   scene.add(dir);
 
-  const dir2 = new THREE.DirectionalLight(0xffffff, 2.0);
+  const dir2 = new THREE.DirectionalLight(0xffffff, 1.8);
   dir2.position.set(-5, 8, -5);
-  dir2.castShadow = false;
+  dir2.castShadow = true;
+  dir2.shadow.mapSize.width = 1024;
+  dir2.shadow.mapSize.height = 1024;
+  dir2.shadow.camera.near = 0.5;
+  dir2.shadow.camera.far = 50;
   scene.add(dir2);
 
-  // Strong ambient for brightness + flat retro look
-  const ambient = new THREE.AmbientLight(0xffffff, 1.8);
+  // High ambient fill for corporate feel
+  const ambient = new THREE.AmbientLight(0xffffff, 1.0); // Reduced slightly as tone mapping boosts brightness
   scene.add(ambient);
 
   // Hemisphere for subtle color variation
-  const hemi = new THREE.HemisphereLight(0xffffff, 0x887755, 1.4);
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x887755, 1.0); // Reduced slightly for better contrast
   scene.add(hemi);
 }
 
@@ -454,16 +466,16 @@ export function createFluorescentLight(x: number, z: number, height: number): TH
     new THREE.MeshStandardMaterial({
       color: 0xffffff,
       emissive: 0xeeeeff,
-      emissiveIntensity: 2.0,
+      emissiveIntensity: 0.4, // Lowered even further to prevent bloom glare
     })
   );
   fixture.position.set(x, height - 0.02, z);
   group.add(fixture);
 
+  // Removed laggy point light entirely to fix overblown ceiling spheres
   // const light = new THREE.PointLight(0xeeeeff, 0.8, 8);
   // light.position.set(x, height - 0.1, z);
   // group.add(light);
 
   return group;
 }
-

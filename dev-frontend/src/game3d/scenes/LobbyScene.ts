@@ -7,12 +7,8 @@ import {
 
 export class LobbyScene implements GameScene {
   name = 'lobby';
-  private dustParticles: THREE.Points | null = null;
-  private elapsedTime = 0;
-  private slowTick = 0;
 
   setup(ctx: SceneContext) {
-    this.elapsedTime = 0;
     addLighting(ctx.scene);
     ctx.scene.background = new THREE.Color(0x1a1e24);
 
@@ -37,7 +33,7 @@ export class LobbyScene implements GameScene {
       const fixtureMat = new THREE.MeshStandardMaterial({
         color: 0xffffff,
         emissive: 0xeeeeff,
-        emissiveIntensity: 1.5,
+        emissiveIntensity: 0.3,
       });
       const fixture = new THREE.Mesh(fixtureGeo, fixtureMat);
       fixture.position.set(-4, 7.96, lz);
@@ -48,8 +44,8 @@ export class LobbyScene implements GameScene {
       ctx.scene.add(fixture2);
 
       // Subtle point lights under each fixture
-      // (removed for performance)
-    }
+      
+          }
 
     // --- ARCHITECTURE: SOLID ENCLOSURE ---
 
@@ -233,10 +229,11 @@ export class LobbyScene implements GameScene {
     const logoMesh4 = createBox(5.0, 0.8, 0.2, 0x111111, [0, 2.9, -11.8]);
     ctx.scene.add(logoMesh1); ctx.scene.add(logoMesh2); ctx.scene.add(logoMesh3); ctx.scene.add(logoMesh4);
 
-    const logoInner = createBox(3.4, 2.4, 0.15, 0xffffff, [0, 4.5, -11.85]);
+const logoInner = createTextSign('N E X U S\nC O R P', 3.4, 2.4, '#0a1a2a', '#44aaff', 48);
+    logoInner.position.set(0, 4.5, -11.83);
     const logoMat = logoInner.material as THREE.MeshStandardMaterial;
-    logoMat.emissive = new THREE.Color(0x3388ff);
-    logoMat.emissiveIntensity = 1.0;
+    logoMat.emissive = new THREE.Color(0x113366);
+    logoMat.emissiveIntensity = 0.5;
     ctx.scene.add(logoInner);
 
     // Spotlight on logo
@@ -381,29 +378,6 @@ export class LobbyScene implements GameScene {
     // --- FLOOR DETAIL: Reception area rug/mat ---
     ctx.scene.add(createBox(8, 0.02, 4, 0x1a1520, [0, 0.01, -7]));
 
-    // Dust particles removed for performance
-    /*
-    {
-      const count = 40;
-      const positions = new Float32Array(count * 3);
-      for (let i = 0; i < count; i++) {
-        positions[i * 3] = (Math.random() - 0.5) * 6; // x
-        positions[i * 3 + 1] = Math.random() * 7;      // y
-        positions[i * 3 + 2] = (Math.random() - 0.5) * 6 - 5; // z
-      }
-      const geo = new THREE.BufferGeometry();
-      geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));    
-      const mat = new THREE.PointsMaterial({
-        color: 0xffffee,
-        size: 0.05,
-        transparent: true,
-        opacity: 0.3,
-      });
-      this.dustParticles = new THREE.Points(geo, mat);
-      ctx.scene.add(this.dustParticles);
-    }
-    */
-
     // Player start (centered at doors)
     ctx.player.camera.position.set(0, 1.7, 8);
     ctx.player.enable();
@@ -448,26 +422,6 @@ export class LobbyScene implements GameScene {
       new THREE.Box3(new THREE.Vector3(-9.3, 0, -5.3), new THREE.Vector3(-8.7, 1.5, -4.7)),
     ]);
   }
-  update(delta: number) {
-    this.elapsedTime += delta;
-    this.slowTick += delta;
-    if (this.slowTick < 0.05) return; // throttle to 20fps
-    this.slowTick = 0;
-    if (this.dustParticles) {
-      const positions = this.dustParticles.geometry.attributes.position;
-      for (let i = 0; i < positions.count; i++) {
-        let y = positions.getY(i);
-        y += 0.05 * 0.08 * Math.sin(this.elapsedTime * 0.5 + i);
-        const x = positions.getX(i) + 0.05 * 0.015 * Math.cos(this.elapsedTime * 0.2 + i * 0.3);
-        if (y > 7) y = 0.5;
-        if (y < 0) y = 7;
-        positions.setY(i, y);
-        positions.setX(i, x);
-      }
-      positions.needsUpdate = true;
-    }
-  }
-  cleanup() {
-    this.dustParticles = null;
-  }
+  update() {}
+  cleanup() {}
 }

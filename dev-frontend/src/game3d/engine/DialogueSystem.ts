@@ -23,38 +23,16 @@ export class DialogueSystem {
   private onUpdate: DialogueCallback;
   private onComplete: (() => void) | null = null;
 
-  // Typewriter state
-  private fullText = '';
-  private displayedChars = 0;
-  private typewriterTimer = 0;
-  private typewriterSpeed = 35; // ms per character
-  private isTyping = false;
-
   constructor(onUpdate: DialogueCallback) {
     this.onUpdate = onUpdate;
 
     document.addEventListener('keydown', (e) => {
-      if (e.code === 'KeyE' || e.code === 'Space') {
-        if (this.isTyping) {
-          // Skip typewriter — show full text immediately
-          this.displayedChars = this.fullText.length;
-          this.isTyping = false;
-          this.isWaiting = true;
-          this.emitCurrent(true);
-        } else if (this.isWaiting) {
-          this.advance();
-        }
+      if ((e.code === 'KeyE' || e.code === 'Space') && this.isWaiting) {
+        this.advance();
       }
     });
     document.addEventListener('click', () => {
-      if (this.isTyping) {
-        this.displayedChars = this.fullText.length;
-        this.isTyping = false;
-        this.isWaiting = true;
-        this.emitCurrent(true);
-      } else if (this.isWaiting) {
-        this.advance();
-      }
+      if (this.isWaiting) this.advance();
     });
   }
 
@@ -71,35 +49,22 @@ export class DialogueSystem {
     const line = this.currentSequence.lines[this.currentLineIndex];
     if (line.delay > 0) {
       this.isWaiting = false;
-      this.isTyping = false;
       this.delayTimer = line.delay;
-      this.fullText = line.text;
-      this.displayedChars = 0;
       this.onUpdate({
         active: true,
         npcName: this.currentSequence.npcName,
-        text: '',
+        text: line.text,
         canAdvance: false,
       });
     } else {
-      // Start typewriter
-      this.fullText = line.text;
-      this.displayedChars = 0;
-      this.typewriterTimer = 0;
-      this.isTyping = true;
-      this.isWaiting = false;
-      this.emitCurrent(false);
+      this.isWaiting = true;
+      this.onUpdate({
+        active: true,
+        npcName: this.currentSequence.npcName,
+        text: line.text,
+        canAdvance: true,
+      });
     }
-  }
-
-  private emitCurrent(canAdvance: boolean) {
-    if (!this.currentSequence) return;
-    this.onUpdate({
-      active: true,
-      npcName: this.currentSequence.npcName,
-      text: this.fullText.slice(0, this.displayedChars),
-      canAdvance,
-    });
   }
 
   private advance() {
@@ -107,9 +72,9 @@ export class DialogueSystem {
     this.currentLineIndex++;
 
     if (this.currentLineIndex >= this.currentSequence.lines.length) {
+      // Sequence done
       this.currentSequence = null;
       this.isWaiting = false;
-      this.isTyping = false;
       this.onUpdate({ active: false, npcName: '', text: '', canAdvance: false });
       this.onComplete?.();
       return;
@@ -119,32 +84,19 @@ export class DialogueSystem {
   }
 
   update(delta: number) {
-    // Delay timer (for lines with delay > 0)
     if (this.delayTimer > 0) {
       this.delayTimer -= delta * 1000;
       if (this.delayTimer <= 0) {
         this.delayTimer = 0;
-        // Now start typewriter for this line
-        this.typewriterTimer = 0;
-        this.displayedChars = 0;
-        this.isTyping = true;
-        this.isWaiting = false;
-      }
-    }
-
-    // Typewriter effect
-    if (this.isTyping && this.displayedChars < this.fullText.length) {
-      this.typewriterTimer += delta * 1000;
-      while (this.typewriterTimer >= this.typewriterSpeed && this.displayedChars < this.fullText.length) {
-        this.typewriterTimer -= this.typewriterSpeed;
-        this.displayedChars++;
-      }
-      this.emitCurrent(false);
-
-      if (this.displayedChars >= this.fullText.length) {
-        this.isTyping = false;
         this.isWaiting = true;
-        this.emitCurrent(true);
+        if (this.currentSequence) {
+          this.onUpdate({
+            active: true,
+            npcName: this.currentSequence.npcName,
+            text: this.currentSequence.lines[this.currentLineIndex].text,
+            canAdvance: true,
+          });
+        }
       }
     }
   }

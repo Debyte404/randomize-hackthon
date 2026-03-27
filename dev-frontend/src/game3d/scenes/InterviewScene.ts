@@ -80,10 +80,7 @@ export class InterviewScene implements GameScene {
       );
       fixture.position.set(lx, roomH - 0.02, 0);
       ctx.scene.add(fixture);
-      const pLight = new THREE.PointLight(0xeeeeff, 0.5, 6);
-      pLight.position.set(lx, roomH - 0.1, 0);
-      ctx.scene.add(pLight);
-    }
+          }
 
     // Walls
     ctx.scene.add(createBox(roomW, roomH, 0.15, wallColor, [0, roomH / 2, -halfD]));
@@ -277,8 +274,7 @@ export class InterviewScene implements GameScene {
     this.totalTime += delta;
     this.phaseTimer += delta;
 
-    // --- NPC idle bob animation (removed for performance) ---
-    /*
+    // --- NPC idle bob animation ---
     if (this.npc1Group) {
       const bob1 = Math.sin(this.totalTime * 1.5 + 0) * this.npcBobAmplitude;
       this.npc1Group.position.y = 0.3 + bob1;
@@ -287,7 +283,6 @@ export class InterviewScene implements GameScene {
       const bob2 = Math.sin(this.totalTime * 1.8 + 2) * this.npcBobAmplitude;
       this.npc2Group.position.y = 0.3 + bob2;
     }
-    */
 
     // --- Screen shake ---
     let shakeOffset = new THREE.Vector3();

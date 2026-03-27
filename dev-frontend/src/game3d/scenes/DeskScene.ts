@@ -81,11 +81,11 @@ export class DeskScene implements GameScene {
 
     // Monitor screen — THIS IS WHERE THE 2D GAME WILL RENDER
     this.bootCanvas = document.createElement('canvas');
-    this.bootCanvas.width = 640;
-    this.bootCanvas.height = 400;
+    this.bootCanvas.width = 512;
+    this.bootCanvas.height = 320;
     this.bootCtx = this.bootCanvas.getContext('2d')!;
     this.bootCtx.fillStyle = '#000';
-    this.bootCtx.fillRect(0, 0, 640, 400);
+    this.bootCtx.fillRect(0, 0, 512, 320);
 
     this.bootTexture = new THREE.CanvasTexture(this.bootCanvas);
     this.bootTexture.minFilter = THREE.NearestFilter;
@@ -217,108 +217,64 @@ export class DeskScene implements GameScene {
   }
 
   private renderBootScreen() {
-    const c = this.bootCtx;
-    const W = 640, H = 400;
-    c.fillStyle = '#050510';
-    c.fillRect(0, 0, W, H);
+    const ctx = this.bootCtx;
+    ctx.fillStyle = '#0a0a1a';
+    ctx.fillRect(0, 0, 512, 320);
 
-    // CRT scanline overlay
-    for (let i = 0; i < H; i += 3) {
-      c.fillStyle = 'rgba(0, 0, 0, 0.25)';
-      c.fillRect(0, i, W, 1);
+    // Add a slight CRT scanline effect to the 2D canvas itself
+    for (let i = 0; i < 320; i += 4) {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      ctx.fillRect(0, i, 512, 2);
     }
 
-    // NexusCorp logo header
-    if (this.bootLineIndex >= 1) {
-      c.fillStyle = '#1a3a2a';
-      c.fillRect(15, 10, W - 30, 40);
-      c.fillStyle = '#33cc66';
-      c.font = 'bold 20px "Courier New", Courier, monospace';
-      c.textAlign = 'center';
-      c.fillText('▓▓ NEXUSCORP OS v3.1 ▓▓', W / 2, 36);
-      c.textAlign = 'left';
-    }
+    ctx.fillStyle = '#33aa55';
+    ctx.font = '16px "Courier New", Courier, monospace';
+    ctx.textAlign = 'left';
+    ctx.shadowColor = '#33aa55';
+    ctx.shadowBlur = 8;
 
-    // Boot text
-    c.fillStyle = '#33aa55';
-    c.font = '18px "Courier New", Courier, monospace';
-    c.shadowColor = '#33aa55';
-    c.shadowBlur = 6;
-
-    const startY = 70;
     this.bootLines.forEach((line, i) => {
-      // Skip first line (shown in header)
-      if (i === 0) return;
-      const prefix = i < this.bootLines.length - 2 ? '> ' : '';
-      c.fillText(prefix + line, 24, startY + (i - 1) * 28);
+      ctx.fillText(line, 20, 30 + i * 24);
     });
 
     // Blinking cursor
     if (Math.floor(Date.now() / 500) % 2 === 0) {
-      const lastY = startY + Math.max(0, this.bootLines.length - 2) * 28;
-      c.fillText('█', 24, lastY);
+      const lastY = 30 + this.bootLines.length * 24;
+      ctx.fillText('█', 20, lastY);
     }
 
-    // Progress bar at bottom
-    const progress = this.bootLineIndex / DeskScene.BOOT_SEQUENCE.length;
-    c.fillStyle = '#1a2a1a';
-    c.fillRect(20, H - 30, W - 40, 12);
-    c.fillStyle = '#33aa55';
-    c.fillRect(20, H - 30, (W - 40) * progress, 12);
+    // Reset shadow
+    ctx.shadowBlur = 0;
 
-    c.shadowBlur = 0;
     this.bootTexture.needsUpdate = true;
   }
 
   private renderFinalScreen() {
-    const c = this.bootCtx;
-    const W = 640, H = 400;
+    const ctx = this.bootCtx;
+    ctx.fillStyle = '#0a0a2a';
+    ctx.fillRect(0, 0, 512, 320);
 
-    // Dark blue background
-    c.fillStyle = '#060820';
-    c.fillRect(0, 0, W, H);
-
-    // CRT scanlines
-    for (let i = 0; i < H; i += 3) {
-      c.fillStyle = 'rgba(0, 0, 0, 0.3)';
-      c.fillRect(0, i, W, 1);
+    for (let i = 0; i < 320; i += 4) {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+      ctx.fillRect(0, i, 512, 2);
     }
 
-    // Glow border
-    c.strokeStyle = '#2255aa';
-    c.lineWidth = 2;
-    c.shadowColor = '#4488ff';
-    c.shadowBlur = 15;
-    c.strokeRect(30, 30, W - 60, H - 60);
-    c.shadowBlur = 0;
+    ctx.fillStyle = '#4488cc';
+    ctx.font = 'bold 28px "Courier New", Courier, monospace';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = '#4488cc';
+    ctx.shadowBlur = 10;
+    ctx.fillText('SIMULATION READY', 256, 140);
 
-    // Main title
-    c.fillStyle = '#4499ff';
-    c.font = 'bold 36px "Courier New", Courier, monospace';
-    c.textAlign = 'center';
-    c.shadowColor = '#4499ff';
-    c.shadowBlur = 12;
-    c.fillText('WORKSTATION READY', W / 2, 140);
-    c.shadowBlur = 0;
-
-    // Subtitle
-    c.fillStyle = '#336699';
-    c.font = '16px "Courier New", Courier, monospace';
-    c.fillText('Welcome to your new desk, Intern.', W / 2, 180);
-    c.fillText('47 unread emails. 3 urgent tickets.', W / 2, 205);
-    c.fillText('Good luck.', W / 2, 230);
-
-    // Blinking prompt
-    if (Math.floor(Date.now() / 700) % 2 === 0) {
-      c.fillStyle = '#ffffff';
-      c.font = 'bold 18px "Courier New", Courier, monospace';
-      c.fillText('[ PRESS E TO BEGIN ]', W / 2, 300);
+    ctx.fillStyle = '#336699';
+    ctx.font = '16px "Courier New", Courier, monospace';
+    ctx.shadowBlur = 0;
+    ctx.fillText('2D Phase Coming Soon...', 256, 180);
+    
+    if (Math.floor(Date.now() / 800) % 2 === 0) {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('Press [E] to begin', 256, 220);
     }
-
-    // NexusCorp footer
-    c.fillStyle = '#222244';
-    c.font = '12px "Courier New", Courier, monospace';
-    c.fillText('NexusCorp™ — Productivity Through Compliance', W / 2, H - 20);
 
     this.bootTexture.needsUpdate = true;
   }

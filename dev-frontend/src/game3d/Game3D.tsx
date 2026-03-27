@@ -14,8 +14,8 @@ import { LobbyScene } from './scenes/LobbyScene';
 import { InterviewScene } from './scenes/InterviewScene';
 import { OfficeScene } from './scenes/OfficeScene';
 import { DeskScene } from './scenes/DeskScene';
-import { AudioSystem } from './engine/AudioSystem';
 import { DIALOGUE } from './data/dialogue';
+import { AudioSystem } from './engine/AudioSystem';
 
 export default function Game3D() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -50,8 +50,9 @@ export default function Game3D() {
     renderer.setPixelRatio(1); // Force 1:1 pixel ratio for authentic retro chunkiness
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.6; // Brighter
-    renderer.shadowMap.enabled = false; // Disabled for 60fps
+    renderer.toneMappingExposure = 1.0;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     // Scene + Camera
     const scene = new THREE.Scene();
@@ -62,12 +63,12 @@ export default function Game3D() {
     const renderPass = new RenderPass(scene, camera);
     composer.addPass(renderPass);
     
-    // Aesthetic Retro Bloom — half-res for performance
-    const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2), 0.5, 0.4, 0.85);
+    // Aesthetic Retro Bloom
+    const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.6, 0.4, 0.85);
     composer.addPass(bloomPass);
 
     // BACK TO RETRO! Crunch it up.
-    const pixelPass = new PixelationPass(2.0);
+    const pixelPass = new PixelationPass(2.5); // Slightly smaller pixel size for readability
     pixelPass.renderToScreen = true;
     composer.addPass(pixelPass);
 
@@ -225,12 +226,12 @@ export default function Game3D() {
   return (
     <>
       {loading && <div className="loading-screen">LOADING...</div>}
-      <div className="game-container" style={{ visibility: loading ? 'hidden' : 'visible' }}>
-        <canvas ref={canvasRef} />
-        <div className="crosshair" />
+      <div className="game-container">
+        <canvas ref={canvasRef} style={{ display: loading ? 'none' : 'block' }} />
+        <div className="crosshair" style={{ display: loading ? 'none' : 'block' }} />
 
       {/* Fade overlay */}
-      <div className="fade-overlay" style={{ opacity: fadeOpacity }} />
+      {!loading && <div className="fade-overlay" style={{ opacity: fadeOpacity }} />}
 
       {/* Dialogue */}
       {dialogueState.active && (
@@ -286,35 +287,35 @@ export default function Game3D() {
           <button 
             className="esc-menu-btn" 
             disabled={!unlockedLevels.includes('street')}
-            onClick={() => { setEscMenuOpen(false); sceneManagerRef.current?.transitionTo('street'); }}>
+            onClick={() => { setEscMenuOpen(false); audioRef.current?.setMuted(false); sceneManagerRef.current?.transitionTo('street'); }}>
             STREET {!unlockedLevels.includes('street') && <span className="button-lock-icon">🔒</span>}
           </button>
           
           <button 
             className="esc-menu-btn" 
             disabled={!unlockedLevels.includes('lobby')}
-            onClick={() => { setEscMenuOpen(false); sceneManagerRef.current?.transitionTo('lobby'); }}>
+            onClick={() => { setEscMenuOpen(false); audioRef.current?.setMuted(false); sceneManagerRef.current?.transitionTo('lobby'); }}>
             LOBBY {!unlockedLevels.includes('lobby') && <span className="button-lock-icon">🔒</span>}
           </button>
 
           <button 
             className="esc-menu-btn" 
             disabled={!unlockedLevels.includes('interview')}
-            onClick={() => { setEscMenuOpen(false); sceneManagerRef.current?.transitionTo('interview'); }}>
+            onClick={() => { setEscMenuOpen(false); audioRef.current?.setMuted(false); sceneManagerRef.current?.transitionTo('interview'); }}>
             INTERVIEW {!unlockedLevels.includes('interview') && <span className="button-lock-icon">🔒</span>}
           </button>
 
           <button 
             className="esc-menu-btn" 
             disabled={!unlockedLevels.includes('office')}
-            onClick={() => { setEscMenuOpen(false); sceneManagerRef.current?.transitionTo('office'); }}>
+            onClick={() => { setEscMenuOpen(false); audioRef.current?.setMuted(false); sceneManagerRef.current?.transitionTo('office'); }}>
             OFFICE {!unlockedLevels.includes('office') && <span className="button-lock-icon">🔒</span>}
           </button>
 
           <button 
             className="esc-menu-btn" 
             disabled={!unlockedLevels.includes('desk')}
-            onClick={() => { setEscMenuOpen(false); sceneManagerRef.current?.transitionTo('desk'); }}>
+            onClick={() => { setEscMenuOpen(false); audioRef.current?.setMuted(false); sceneManagerRef.current?.transitionTo('desk'); }}>
             YOUR DESK {!unlockedLevels.includes('desk') && <span className="button-lock-icon">🔒</span>}
           </button>
         </div>
