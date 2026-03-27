@@ -40,12 +40,12 @@ export class DeskScene implements GameScene {
     this.bootTimer = 0;
 
     addLighting(ctx.scene);
-    ctx.scene.background = new THREE.Color(0x1a1e24);
+    ctx.scene.background = new THREE.Color(0x2a3a4a);
 
     // Small office area around desk
-    const floor = createBox(7, 0.05, 7, 0x4a5a5a, [0, 0, 0]);
+    const floor = createBox(6, 0.05, 6, 0x4a5a5a, [0, 0, 0]);
     ctx.scene.add(floor);
-    ctx.scene.add(createCeiling(7, 7, 3.2, 0xd8d8d8));
+    ctx.scene.add(createCeiling(6, 6, 3.2));
 
     // Back wall
     const backWall = createBox(6, 3.2, 0.15, 0x5a6a7a, [0, 1.6, -2.5]);
@@ -81,11 +81,11 @@ export class DeskScene implements GameScene {
 
     // Monitor screen — THIS IS WHERE THE 2D GAME WILL RENDER
     this.bootCanvas = document.createElement('canvas');
-    this.bootCanvas.width = 640;
-    this.bootCanvas.height = 400;
+    this.bootCanvas.width = 1024;
+    this.bootCanvas.height = 640;
     this.bootCtx = this.bootCanvas.getContext('2d')!;
     this.bootCtx.fillStyle = '#000';
-    this.bootCtx.fillRect(0, 0, 640, 400);
+    this.bootCtx.fillRect(0, 0, 512, 320);
 
     this.bootTexture = new THREE.CanvasTexture(this.bootCanvas);
     this.bootTexture.minFilter = THREE.NearestFilter;
@@ -124,17 +124,17 @@ export class DeskScene implements GameScene {
     ctx.scene.add(mug);
 
     // Wi-Fi post-it
-    const wifiNote = createTextSign('Wi-Fi: NexusCorp\nPW: intern123', 0.15, 0.1, '#90d0ff', '#1a1a1a', 10);
+    const wifiNote = createTextSign('Wi-Fi: NexusCorp_Guest PW: intern123', 0.15, 0.08, '#90d0ff', '#1a1a1a', 12);
     wifiNote.position.set(0.3, 1.2, -0.65);
     ctx.scene.add(wifiNote);
 
     // Email pinned to wall
-    const email = createTextSign('RE: RE: RE: RE:\nPlease Fix The Bug', 0.3, 0.2, '#eeeeee', '#333333', 12);
+    const email = createTextSign('RE: RE: RE: RE: Please Fix The Bug', 0.3, 0.2, '#eeeeee', '#333333', 14);
     email.position.set(-1.0, 1.5, -2.4);
     ctx.scene.add(email);
 
     // Calendar — every day is MEETING
-    const calendar = createTextSign('MON: MTG\nTUE: MTG\nWED: MTG\nTHU: MTG\nFRI: MTG', 0.35, 0.3, '#ffffff', '#aa3333', 10);
+    const calendar = createTextSign('MON: MEETING | TUE: MEETING | WED: MEETING | THU: MEETING | FRI: MEETING', 0.35, 0.25, '#ffffff', '#aa3333', 11);
     calendar.position.set(0.5, 0.82, -0.65);
     calendar.rotation.x = -Math.PI / 3;
     ctx.scene.add(calendar);
@@ -143,11 +143,17 @@ export class DeskScene implements GameScene {
     const plant = createPlant(-0.55, -0.3);
     ctx.scene.add(plant);
 
-    // Coworker visible in background
-    const bgCoworker = createBox(0.3, 0.8, 0.3, 0x5a6a5a, [2, 1.0, -1.5]);
-    ctx.scene.add(bgCoworker);
-    const bgHead = createBox(0.2, 0.2, 0.2, 0xd4a574, [2, 1.5, -1.5]);
-    ctx.scene.add(bgHead);
+    // Background details — other cubicle partitions visible
+    const partition1 = createBox(0.05, 1.5, 1.5, 0x5a6a7a, [2.2, 0.75, -1.5]);
+    ctx.scene.add(partition1);
+    const partition2 = createBox(0.05, 1.5, 1.5, 0x5a6a7a, [-2.2, 0.75, -1.5]);
+    ctx.scene.add(partition2);
+
+    // Distant desk visible through gap
+    const bgDesk = createBox(0.8, 0.04, 0.4, 0x6a5a4a, [2, 0.75, -2]);
+    ctx.scene.add(bgDesk);
+    const bgMonitor = createBox(0.25, 0.2, 0.02, 0x1a1a1a, [2, 0.95, -2.15]);
+    ctx.scene.add(bgMonitor);
 
     // Camera — fixed at desk, looking at monitor
     ctx.player.disable();
@@ -217,109 +223,68 @@ export class DeskScene implements GameScene {
   }
 
   private renderBootScreen() {
-    const c = this.bootCtx;
-    const W = 640, H = 400;
-    c.fillStyle = '#050510';
-    c.fillRect(0, 0, W, H);
+    const ctx = this.bootCtx;
+    const w = this.bootCanvas.width;
+    const h = this.bootCanvas.height;
 
-    // CRT scanline overlay
-    for (let i = 0; i < H; i += 3) {
-      c.fillStyle = 'rgba(0, 0, 0, 0.25)';
-      c.fillRect(0, i, W, 1);
+    // CRT-style dark background
+    ctx.fillStyle = '#0a0a1a';
+    ctx.fillRect(0, 0, w, h);
+
+    // Subtle scanlines
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+    for (let y = 0; y < h; y += 4) {
+      ctx.fillRect(0, y, w, 2);
     }
 
-    // NexusCorp logo header
-    if (this.bootLineIndex >= 1) {
-      c.fillStyle = '#1a3a2a';
-      c.fillRect(15, 10, W - 30, 40);
-      c.fillStyle = '#33cc66';
-      c.font = 'bold 20px "Courier New", Courier, monospace';
-      c.textAlign = 'center';
-      c.fillText('▓▓ NEXUSCORP OS v3.1 ▓▓', W / 2, 36);
-      c.textAlign = 'left';
-    }
+    // Green terminal text
+    ctx.fillStyle = '#33ee66';
+    ctx.font = 'bold 28px Courier New, monospace';
+    ctx.textAlign = 'left';
+    ctx.shadowColor = '#33aa55';
+    ctx.shadowBlur = 4;
 
-    // Boot text
-    c.fillStyle = '#33aa55';
-    c.font = '18px "Courier New", Courier, monospace';
-    c.shadowColor = '#33aa55';
-    c.shadowBlur = 6;
-
-    const startY = 70;
     this.bootLines.forEach((line, i) => {
-      // Skip first line (shown in header)
-      if (i === 0) return;
-      const prefix = i < this.bootLines.length - 2 ? '> ' : '';
-      c.fillText(prefix + line, 24, startY + (i - 1) * 28);
+      ctx.fillText(line, 40, 60 + i * 44);
     });
 
     // Blinking cursor
     if (Math.floor(Date.now() / 500) % 2 === 0) {
-      const lastY = startY + Math.max(0, this.bootLines.length - 2) * 28;
-      c.fillText('█', 24, lastY);
+      const lastY = 60 + this.bootLines.length * 44;
+      ctx.fillText('█', 40, lastY);
     }
 
-    // Progress bar at bottom
-    const progress = this.bootLineIndex / DeskScene.BOOT_SEQUENCE.length;
-    c.fillStyle = '#1a2a1a';
-    c.fillRect(20, H - 30, W - 40, 12);
-    c.fillStyle = '#33aa55';
-    c.fillRect(20, H - 30, (W - 40) * progress, 12);
-
-    c.shadowBlur = 0;
+    ctx.shadowBlur = 0;
     this.bootTexture.needsUpdate = true;
   }
 
   private renderFinalScreen() {
-    const c = this.bootCtx;
-    const W = 640, H = 400;
+    const ctx = this.bootCtx;
+    const w = this.bootCanvas.width;
+    const h = this.bootCanvas.height;
 
-    // Dark blue background
-    c.fillStyle = '#060820';
-    c.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#0a0a2a';
+    ctx.fillRect(0, 0, w, h);
 
-    // CRT scanlines
-    for (let i = 0; i < H; i += 3) {
-      c.fillStyle = 'rgba(0, 0, 0, 0.3)';
-      c.fillRect(0, i, W, 1);
+    // Scanlines
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    for (let y = 0; y < h; y += 4) {
+      ctx.fillRect(0, y, w, 2);
     }
 
-    // Glow border
-    c.strokeStyle = '#2255aa';
-    c.lineWidth = 2;
-    c.shadowColor = '#4488ff';
-    c.shadowBlur = 15;
-    c.strokeRect(30, 30, W - 60, H - 60);
-    c.shadowBlur = 0;
+    ctx.shadowColor = '#4488cc';
+    ctx.shadowBlur = 8;
 
-    // Main title
-    c.fillStyle = '#4499ff';
-    c.font = 'bold 36px "Courier New", Courier, monospace';
-    c.textAlign = 'center';
-    c.shadowColor = '#4499ff';
-    c.shadowBlur = 12;
-    c.fillText('WORKSTATION READY', W / 2, 140);
-    c.shadowBlur = 0;
+    ctx.fillStyle = '#4488cc';
+    ctx.font = 'bold 48px Courier New, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('SIMULATION READY', w / 2, h / 2 - 20);
 
-    // Subtitle
-    c.fillStyle = '#336699';
-    c.font = '16px "Courier New", Courier, monospace';
-    c.fillText('Welcome to your new desk, Intern.', W / 2, 180);
-    c.fillText('47 unread emails. 3 urgent tickets.', W / 2, 205);
-    c.fillText('Good luck.', W / 2, 230);
+    ctx.fillStyle = '#336699';
+    ctx.font = '24px Courier New, monospace';
+    ctx.fillText('2D Phase Coming Soon...', w / 2, h / 2 + 40);
 
-    // Blinking prompt
-    if (Math.floor(Date.now() / 700) % 2 === 0) {
-      c.fillStyle = '#ffffff';
-      c.font = 'bold 18px "Courier New", Courier, monospace';
-      c.fillText('[ PRESS E TO BEGIN ]', W / 2, 300);
-    }
-
-    // NexusCorp footer
-    c.fillStyle = '#222244';
-    c.font = '12px "Courier New", Courier, monospace';
-    c.fillText('NexusCorp™ — Productivity Through Compliance', W / 2, H - 20);
-
+    ctx.shadowBlur = 0;
     this.bootTexture.needsUpdate = true;
   }
 

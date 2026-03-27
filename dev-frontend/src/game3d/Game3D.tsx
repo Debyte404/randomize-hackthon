@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { PixelationPass } from './shaders/PixelationPass';
 import { PlayerController } from './engine/PlayerController';
 import { DialogueSystem } from './engine/DialogueSystem';
@@ -14,11 +13,12 @@ import { LobbyScene } from './scenes/LobbyScene';
 import { InterviewScene } from './scenes/InterviewScene';
 import { OfficeScene } from './scenes/OfficeScene';
 import { DeskScene } from './scenes/DeskScene';
-import { AudioSystem } from './engine/AudioSystem';
 import { DIALOGUE } from './data/dialogue';
+import { AudioSystem } from './engine/AudioSystem';
 
 export default function Game3D() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const audioRef = useRef<AudioSystem | null>(null);
   const [fadeOpacity, setFadeOpacity] = useState(1);
   const [dialogueState, setDialogueState] = useState({
     active: false, npcName: '', text: '', canAdvance: false,
@@ -30,28 +30,26 @@ export default function Game3D() {
   } | null>(null);
   const [narratorText, setNarratorText] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [escMenuOpen, setEscMenuOpen] = useState(false);
-  // DEV MODE: All levels initially unlocked for easier testing. Will revert later.
-  const [unlockedLevels, setUnlockedLevels] = useState<string[]>(['street', 'lobby', 'interview', 'office', 'desk']);
 
   // Refs to hold mutable game state
   const sceneManagerRef = useRef<SceneManager | null>(null);
-  const playerControllerRef = useRef<PlayerController | null>(null);
   const interviewSceneRef = useRef<InterviewScene | null>(null);
-  const audioRef = useRef<AudioSystem | null>(null);
+
+  const handleTrigger = useCallback((id: string) => {
+    const sm = sceneManagerRef.current;
+    if (!sm) return;
+    // We'll set this up after sm is created
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     // Renderer
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: "high-performance" });
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(1); // Force 1:1 pixel ratio for authentic retro chunkiness
+    renderer.setPixelRatio(1); // We handle pixelation ourselves
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.6; // Brighter
-    renderer.shadowMap.enabled = false; // Disabled for 60fps
 
     // Scene + Camera
     const scene = new THREE.Scene();
@@ -61,24 +59,13 @@ export default function Game3D() {
     const composer = new EffectComposer(renderer);
     const renderPass = new RenderPass(scene, camera);
     composer.addPass(renderPass);
-    
-    // Aesthetic Retro Bloom — half-res for performance
-    const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2), 0.5, 0.4, 0.85);
-    composer.addPass(bloomPass);
 
-    // BACK TO RETRO! Crunch it up.
-    const pixelPass = new PixelationPass(2.0);
+    const pixelPass = new PixelationPass(4.0);
     pixelPass.renderToScreen = true;
     composer.addPass(pixelPass);
 
     // Player
     const player = new PlayerController(camera, canvas);
-    playerControllerRef.current = player;
-
-    // Audio
-    const audio = new AudioSystem();
-    audio.start();
-    audioRef.current = audio;
 
     // Dialogue
     const dialogue = new DialogueSystem(setDialogueState);
@@ -93,6 +80,10 @@ export default function Game3D() {
       triggerHandler?.(id);
     });
 
+    // Audio System
+    const audio = new AudioSystem();
+    audioRef.current = audio;
+
     // Scene context
     const ctx: SceneContext = {
       scene,
@@ -100,16 +91,13 @@ export default function Game3D() {
       player,
       dialogue,
       triggers,
-      transitionTo: (name) => {
-        setUnlockedLevels(prev => prev.includes(name) ? prev : [...prev, name]);
-        sm.transitionTo(name);
-      },
+      transitionTo: (name) => sm.transitionTo(name),
       setFade: setFadeOpacity,
       showChoice: (options, onSelect) => setChoiceState({ options, onSelect }),
       hideChoice: () => setChoiceState(null),
       showNarrator: (text) => setNarratorText(text),
       hideNarrator: () => setNarratorText(null),
-      audio,
+        audio,
     };
 
     // Scene Manager
@@ -132,7 +120,7 @@ export default function Game3D() {
     triggerHandler = (id: string) => {
       switch (id) {
         case 'door':
-          ctx.transitionTo('lobby');
+          sm.transitionTo('lobby');
           break;
         case 'receptionist':
           player.disable();
@@ -141,32 +129,35 @@ export default function Game3D() {
           });
           break;
         case 'hallway':
-          ctx.transitionTo('interview');
+          sm.transitionTo('interview');
           break;
         case 'sit':
           interviewScene.onSitDown(ctx);
           break;
         case 'coworkerPrinter':
+          officeScene.showAngryReaction('coworkerPrinter');
           player.disable();
           dialogue.play(DIALOGUE.coworkerPrinter, () => {
             player.enable();
           });
           break;
         case 'coworkerDesk':
+          officeScene.showAngryReaction('coworkerDesk');
           player.disable();
           dialogue.play(DIALOGUE.coworkerDesk, () => {
             player.enable();
           });
           break;
         case 'yourDesk':
-          ctx.transitionTo('desk');
+          sm.transitionTo('desk');
           break;
       }
     };
 
     // Start with street scene
     setLoading(false);
-    ctx.transitionTo('street');
+    audio.start();
+    sm.transitionTo('street');
 
     // Game loop
     const clock = new THREE.Clock();
@@ -201,36 +192,22 @@ export default function Game3D() {
     };
     window.addEventListener('resize', onResize);
 
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'Escape') {
-        setEscMenuOpen(prev => {
-          const next = !prev;
-          audioRef.current?.setMuted(next);
-          return next;
-        });
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-
     return () => {
       cancelAnimationFrame(animFrameId);
       window.removeEventListener('resize', onResize);
-      window.removeEventListener('keydown', onKeyDown);
       renderer.dispose();
       composer.dispose();
-      audio.dispose();
     };
   }, []);
 
   return (
-    <>
+    <div className="game-container">
       {loading && <div className="loading-screen">LOADING...</div>}
-      <div className="game-container" style={{ visibility: loading ? 'hidden' : 'visible' }}>
-        <canvas ref={canvasRef} />
-        <div className="crosshair" />
+      <canvas ref={canvasRef} style={{ display: loading ? 'none' : 'block' }} />
+      <div className="crosshair" style={{ display: loading ? 'none' : 'block' }} />
 
       {/* Fade overlay */}
-      <div className="fade-overlay" style={{ opacity: fadeOpacity }} />
+      {!loading && <div className="fade-overlay" style={{ opacity: fadeOpacity }} />}
 
       {/* Dialogue */}
       {dialogueState.active && (
@@ -269,57 +246,9 @@ export default function Game3D() {
       {narratorText && (
         <div className="narrator-overlay">{narratorText}</div>
       )}
-
-      {/* Pause / Esc Menu */}
-      {escMenuOpen && (
-        <div className="esc-menu-overlay">
-          <div className="esc-menu-title">PAUSED</div>
-          <button className="esc-menu-btn" onClick={() => {
-            setEscMenuOpen(false);
-            // After closing menu, re-acquire pointer lock if not in dialogue
-            if (playerControllerRef.current && !dialogueState.active) {
-              const canvas = canvasRef.current;
-              if (canvas) canvas.requestPointerLock();
-            }
-          }}>RESUME</button>
-          
-          <button 
-            className="esc-menu-btn" 
-            disabled={!unlockedLevels.includes('street')}
-            onClick={() => { setEscMenuOpen(false); sceneManagerRef.current?.transitionTo('street'); }}>
-            STREET {!unlockedLevels.includes('street') && <span className="button-lock-icon">🔒</span>}
-          </button>
-          
-          <button 
-            className="esc-menu-btn" 
-            disabled={!unlockedLevels.includes('lobby')}
-            onClick={() => { setEscMenuOpen(false); sceneManagerRef.current?.transitionTo('lobby'); }}>
-            LOBBY {!unlockedLevels.includes('lobby') && <span className="button-lock-icon">🔒</span>}
-          </button>
-
-          <button 
-            className="esc-menu-btn" 
-            disabled={!unlockedLevels.includes('interview')}
-            onClick={() => { setEscMenuOpen(false); sceneManagerRef.current?.transitionTo('interview'); }}>
-            INTERVIEW {!unlockedLevels.includes('interview') && <span className="button-lock-icon">🔒</span>}
-          </button>
-
-          <button 
-            className="esc-menu-btn" 
-            disabled={!unlockedLevels.includes('office')}
-            onClick={() => { setEscMenuOpen(false); sceneManagerRef.current?.transitionTo('office'); }}>
-            OFFICE {!unlockedLevels.includes('office') && <span className="button-lock-icon">🔒</span>}
-          </button>
-
-          <button 
-            className="esc-menu-btn" 
-            disabled={!unlockedLevels.includes('desk')}
-            onClick={() => { setEscMenuOpen(false); sceneManagerRef.current?.transitionTo('desk'); }}>
-            YOUR DESK {!unlockedLevels.includes('desk') && <span className="button-lock-icon">🔒</span>}
-          </button>
-        </div>
-      )}
-      </div>
-    </>
+    </div>
   );
 }
+
+
+

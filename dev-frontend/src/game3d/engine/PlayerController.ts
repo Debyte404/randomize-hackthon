@@ -4,8 +4,8 @@ export class PlayerController {
   camera: THREE.PerspectiveCamera;
   enabled = true;
 
-  private moveSpeed = 10.0; // Greatly increased base speed
-  private sprintMultiplier = 2.5; // Make sprinting significantly faster
+  private moveSpeed = 4.0;
+  private sprintMultiplier = 1.6;
   private mouseSensitivity = 0.002;
   private pitchLimit = Math.PI * 0.44; // ~80 degrees
 
@@ -78,8 +78,7 @@ export class PlayerController {
   update(delta: number) {
     if (!this.enabled || !this.isLocked) return;
 
-    const isSprinting = this.keys['ShiftLeft'] || this.keys['ShiftRight'];
-    const speed = isSprinting ? this.moveSpeed * this.sprintMultiplier : this.moveSpeed;
+    const speed = this.keys['ShiftLeft'] ? this.moveSpeed * this.sprintMultiplier : this.moveSpeed;
 
     // Damping
     this.velocity.x *= 0.85;
