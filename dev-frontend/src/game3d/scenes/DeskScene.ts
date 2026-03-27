@@ -40,12 +40,12 @@ export class DeskScene implements GameScene {
     this.bootTimer = 0;
 
     addLighting(ctx.scene);
-    ctx.scene.background = new THREE.Color(0x2a3a4a);
+    ctx.scene.background = new THREE.Color(0x1a1e24);
 
     // Small office area around desk
-    const floor = createBox(6, 0.05, 6, 0x4a5a5a, [0, 0, 0]);
+    const floor = createBox(7, 0.05, 7, 0x4a5a5a, [0, 0, 0]);
     ctx.scene.add(floor);
-    ctx.scene.add(createCeiling(6, 6, 3.2));
+    ctx.scene.add(createCeiling(7, 7, 3.2, 0xd8d8d8));
 
     // Back wall
     const backWall = createBox(6, 3.2, 0.15, 0x5a6a7a, [0, 1.6, -2.5]);
@@ -124,17 +124,17 @@ export class DeskScene implements GameScene {
     ctx.scene.add(mug);
 
     // Wi-Fi post-it
-    const wifiNote = createTextSign('Wi-Fi: NexusCorp_Guest PW: intern123', 0.15, 0.08, '#90d0ff', '#1a1a1a', 12);
+    const wifiNote = createTextSign('Wi-Fi: NexusCorp\nPW: intern123', 0.15, 0.1, '#90d0ff', '#1a1a1a', 10);
     wifiNote.position.set(0.3, 1.2, -0.65);
     ctx.scene.add(wifiNote);
 
     // Email pinned to wall
-    const email = createTextSign('RE: RE: RE: RE: Please Fix The Bug', 0.3, 0.2, '#eeeeee', '#333333', 14);
+    const email = createTextSign('RE: RE: RE: RE:\nPlease Fix The Bug', 0.3, 0.2, '#eeeeee', '#333333', 12);
     email.position.set(-1.0, 1.5, -2.4);
     ctx.scene.add(email);
 
     // Calendar — every day is MEETING
-    const calendar = createTextSign('MON: MEETING | TUE: MEETING | WED: MEETING | THU: MEETING | FRI: MEETING', 0.35, 0.25, '#ffffff', '#aa3333', 11);
+    const calendar = createTextSign('MON: MTG\nTUE: MTG\nWED: MTG\nTHU: MTG\nFRI: MTG', 0.35, 0.3, '#ffffff', '#aa3333', 10);
     calendar.position.set(0.5, 0.82, -0.65);
     calendar.rotation.x = -Math.PI / 3;
     ctx.scene.add(calendar);

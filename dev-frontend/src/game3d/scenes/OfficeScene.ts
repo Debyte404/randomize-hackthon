@@ -10,12 +10,12 @@ export class OfficeScene implements GameScene {
 
   setup(ctx: SceneContext) {
     addLighting(ctx.scene);
-    ctx.scene.background = new THREE.Color(0x3a4a5a);
+    ctx.scene.background = new THREE.Color(0x1a1e24);
 
     // Large office floor
-    const floor = createFloor(16, 20, 0x4a5a5a);
+    const floor = createFloor(18, 22, 0x4a5a5a);
     ctx.scene.add(floor);
-    ctx.scene.add(createCeiling(16, 20, 3.2));
+    ctx.scene.add(createCeiling(18, 22, 3.2, 0xd8d8d8));
 
     // Walls
     const backWall = createWall(16, 3.2, 0x5a6a7a);
@@ -86,7 +86,7 @@ export class OfficeScene implements GameScene {
 
     // Sprint board on wall
     const sprintBoard = createTextSign(
-      'SPRINT BOARD: TODO | IN PROGRESS | BLOCKED | DONE(empty)',
+      'SPRINT BOARD\nTODO | IN PROGRESS\nBLOCKED | DONE(empty)',
       2.5, 1.5, '#e8e8e0', '#2a2a2a', 18
     );
     sprintBoard.position.set(-7.8, 2.0, 0);
@@ -95,8 +95,8 @@ export class OfficeScene implements GameScene {
 
     // "Days without incident: 0"
     const incidentCounter = createTextSign(
-      'DAYS WITHOUT INCIDENT: 0',
-      1.2, 0.4, '#aa3333', '#eeeeee', 22
+      'DAYS WITHOUT\nINCIDENT: 0',
+      1.2, 0.5, '#aa3333', '#eeeeee', 20
     );
     incidentCounter.position.set(7.8, 2.5, -2);
     incidentCounter.rotation.y = -Math.PI / 2;
@@ -104,8 +104,8 @@ export class OfficeScene implements GameScene {
 
     // "Please Do Not Discuss Salary. Or Feelings."
     const salarySign = createTextSign(
-      'Please Do Not Discuss Salary. Or Feelings.',
-      2.0, 0.4, '#2a3a4a', '#aabbcc', 20
+      'Please Do Not Discuss\nSalary. Or Feelings.',
+      2.0, 0.5, '#2a3a4a', '#aabbcc', 18
     );
     salarySign.position.set(0, 2.8, -9.8);
     ctx.scene.add(salarySign);

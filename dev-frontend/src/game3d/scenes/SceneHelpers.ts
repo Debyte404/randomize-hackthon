@@ -179,22 +179,34 @@ export function createTextSign(
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  // Word wrap
-  const words = text.split(' ');
+  // Handle explicit newlines first, then word wrap each paragraph
+  const paragraphs = text.split('\n');
   const lines: string[] = [];
-  let currentLine = '';
-  for (const word of words) {
-    const test = currentLine ? currentLine + ' ' + word : word;
-    if (ctx.measureText(test).width > canvas.width - (40 * scale)) {
-      lines.push(currentLine);
-      currentLine = word;
-    } else {
-      currentLine = test;
+  for (const para of paragraphs) {
+    const words = para.split(' ');
+    let currentLine = '';
+    for (const word of words) {
+      const test = currentLine ? currentLine + ' ' + word : word;
+      if (ctx.measureText(test).width > canvas.width - (40 * scale)) {
+        if (currentLine) lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = test;
+      }
     }
+    if (currentLine) lines.push(currentLine);
   }
-  lines.push(currentLine);
 
-  const lineHeight = scaledFontSize * 1.25;
+  // Auto-shrink font if text overflows vertically
+  let lineHeight = scaledFontSize * 1.25;
+  const totalTextHeight = lines.length * lineHeight;
+  if (totalTextHeight > canvas.height - (20 * scale)) {
+    const shrinkRatio = (canvas.height - (20 * scale)) / totalTextHeight;
+    const shrunkFontSize = Math.floor(scaledFontSize * shrinkRatio);
+    ctx.font = `bold ${shrunkFontSize}px 'Courier New', Courier, monospace`;
+    lineHeight = shrunkFontSize * 1.25;
+  }
+
   const startY = canvas.height / 2 - ((lines.length - 1) * lineHeight) / 2;
   lines.forEach((line, i) => {
     ctx.fillText(line, canvas.width / 2, startY + i * lineHeight);
