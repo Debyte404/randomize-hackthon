@@ -55,7 +55,7 @@ export default function Game3D() {
     const renderPass = new RenderPass(scene, camera);
     composer.addPass(renderPass);
 
-    const pixelPass = new PixelationPass(4.0);
+    const pixelPass = new PixelationPass(2.0); // Reduced pixelation size for better readability
     pixelPass.renderToScreen = true;
     composer.addPass(pixelPass);
 

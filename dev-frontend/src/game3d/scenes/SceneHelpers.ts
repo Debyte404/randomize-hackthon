@@ -164,15 +164,18 @@ export function createTextSign(
   fontSize = 24
 ): THREE.Mesh {
   const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = Math.floor(512 * (height / width));
+  // High resolution for clear text, scaled up by 4
+  const scale = 4;
+  canvas.width = 512 * scale;
+  canvas.height = Math.floor(512 * scale * (height / width));
   const ctx = canvas.getContext('2d')!;
 
   ctx.fillStyle = bgColor;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   ctx.fillStyle = textColor;
-  ctx.font = `${fontSize}px Courier New, monospace`;
+  const scaledFontSize = fontSize * scale;
+  ctx.font = `bold ${scaledFontSize}px 'Courier New', Courier, monospace`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
@@ -182,7 +185,7 @@ export function createTextSign(
   let currentLine = '';
   for (const word of words) {
     const test = currentLine ? currentLine + ' ' + word : word;
-    if (ctx.measureText(test).width > canvas.width - 40) {
+    if (ctx.measureText(test).width > canvas.width - (40 * scale)) {
       lines.push(currentLine);
       currentLine = word;
     } else {
@@ -191,18 +194,22 @@ export function createTextSign(
   }
   lines.push(currentLine);
 
-  const lineHeight = fontSize * 1.4;
+  const lineHeight = scaledFontSize * 1.25;
   const startY = canvas.height / 2 - ((lines.length - 1) * lineHeight) / 2;
   lines.forEach((line, i) => {
     ctx.fillText(line, canvas.width / 2, startY + i * lineHeight);
   });
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.NearestFilter;
-  texture.magFilter = THREE.NearestFilter;
-
+  // Use LinearFilter for high-res text, it looks so much better when scaled down.
+  // We're dropping NearestFilter here specifically for signs so they remain readable
+  // despite the whole screen getting pixelated.
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  // texture.anisotropy = 4; (optional but helpful if viewed at an angle)
+  
   const geo = new THREE.PlaneGeometry(width, height);
-  const mat = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.9 });
+  const mat = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.9, transparent: true });
   return new THREE.Mesh(geo, mat);
 }
 
