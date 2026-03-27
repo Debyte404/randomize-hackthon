@@ -11,10 +11,16 @@ export class InterviewScene implements GameScene {
   private seated = false;
   private cameraTarget = new THREE.Vector3();
   private cameraLerping = false;
+  private introTimer = 0;
+  private introPlayed = false;
+  private ctx: SceneContext | null = null;
 
   setup(ctx: SceneContext) {
     this.seated = false;
     this.cameraLerping = false;
+    this.introTimer = 0;
+    this.introPlayed = false;
+    this.ctx = ctx;
 
     addLighting(ctx.scene);
     ctx.scene.background = new THREE.Color(0x1a1e24);
@@ -166,7 +172,6 @@ export class InterviewScene implements GameScene {
     ctx.scene.add(npc2);
 
     // --- WHITEBOARD (text properly fitted) ---
-    // Make the sign wider to fit the long OKR text
     const wb = createTextSign(
       'Q3 OKRs:\nSYNERGY | LEVERAGE\nDISRUPT | PIVOT',
       3.0, 1.8, '#e8e8e0', '#2a2a2a', 20
@@ -187,7 +192,7 @@ export class InterviewScene implements GameScene {
     ctx.scene.add(createBox(0.12, 0.03, 0.03, 0xcc3333, [0.0, 1.25, -halfD + 0.12]));
     ctx.scene.add(createBox(0.12, 0.03, 0.03, 0x222222, [0.3, 1.25, -halfD + 0.12]));
 
-    // Crossed out old OKR text (placed below whiteboard)
+    // Crossed out old OKR text
     const wbOld = createTextSign(
       "Q2: Don't Lose\nAny More Interns",
       1.8, 0.5, '#e8e8e0', '#aa4444', 16
@@ -214,7 +219,6 @@ export class InterviewScene implements GameScene {
     clockFace.position.set(halfW - 0.1, 2.8, 0);
     clockFace.rotation.y = -Math.PI / 2;
     ctx.scene.add(clockFace);
-    // Clock frame
     const clockRing = new THREE.Mesh(
       new THREE.RingGeometry(0.24, 0.28, 16),
       new THREE.MeshStandardMaterial({ color: 0x333333, side: THREE.DoubleSide })
@@ -226,41 +230,34 @@ export class InterviewScene implements GameScene {
     // --- DOOR (on front wall, visual only) ---
     ctx.scene.add(createBox(1.2, 2.4, 0.16, 0x4a3a2a, [-2, 1.2, halfD - 0.01]));
     ctx.scene.add(createBox(1.4, 2.5, 0.02, 0x333333, [-2, 1.25, halfD - 0.02])); // frame
-    // Door handle
-    ctx.scene.add(createBox(0.08, 0.03, 0.06, 0xaaaaaa, [-1.45, 1.1, halfD - 0.1]));
-    // Room label
+    ctx.scene.add(createBox(0.08, 0.03, 0.06, 0xaaaaaa, [-1.45, 1.1, halfD - 0.1])); // handle
     const roomLabel = createTextSign('CONF. ROOM B', 1.0, 0.25, '#333333', '#dddddd', 18);
     roomLabel.position.set(-2, 2.6, halfD - 0.05);
     ctx.scene.add(roomLabel);
 
-    // --- Player start ---
+    // --- Camera starts looking at the chair from entrance ---
+    // Player is disabled — this is a scripted scene
+    ctx.player.disable();
     ctx.player.camera.position.set(0, 1.7, 3.8);
-    ctx.player.enable();
+    ctx.player.camera.lookAt(0, 1.0, 0);
 
-    // Seat camera target
+    // Seat camera target (seated position at the player's chair)
     this.cameraTarget.set(0, 1.3, 1.2);
 
-    // Sit trigger
-    ctx.triggers.add({
-      id: 'sit',
-      position: new THREE.Vector3(0, 1, 1.4),
-      size: new THREE.Vector3(1.5, 2, 1.5),
-      once: true,
-      promptText: '[E] Sit Down',
-    });
-
-    ctx.player.setColliders([
-      // Walls
-      new THREE.Box3(new THREE.Vector3(-halfW - 0.5, 0, -halfD - 0.5), new THREE.Vector3(-halfW + 0.2, roomH, halfD + 0.5)),
-      new THREE.Box3(new THREE.Vector3(halfW - 0.2, 0, -halfD - 0.5), new THREE.Vector3(halfW + 0.5, roomH, halfD + 0.5)),
-      new THREE.Box3(new THREE.Vector3(-halfW - 0.5, 0, -halfD - 0.5), new THREE.Vector3(halfW + 0.5, roomH, -halfD + 0.2)),
-      new THREE.Box3(new THREE.Vector3(-halfW - 0.5, 0, halfD - 0.2), new THREE.Vector3(halfW + 0.5, roomH, halfD + 0.5)),
-      // Table
-      new THREE.Box3(new THREE.Vector3(-1.8, 0, -0.8), new THREE.Vector3(1.8, 0.9, 0.8)),
-    ]);
+    ctx.player.setColliders([]);
   }
 
   update(delta: number, ctx: SceneContext) {
+    // Auto-start the interview sequence after a brief pause
+    if (!this.introPlayed) {
+      this.introTimer += delta;
+      if (this.introTimer > 1.5) {
+        this.introPlayed = true;
+        this.startInterview(ctx);
+      }
+      return;
+    }
+
     if (this.cameraLerping) {
       ctx.player.camera.position.lerp(this.cameraTarget, delta * 2);
       // Look at interviewers
@@ -292,16 +289,31 @@ export class InterviewScene implements GameScene {
     }
   }
 
+  private startInterview(ctx: SceneContext) {
+    // Show narrator text as player walks to seat
+    ctx.showNarrator('You take a seat across from the panel.');
+
+    // Start walking camera toward the chair
+    this.seated = true;
+    this.cameraLerping = true;
+
+    // Clear narrator after a moment
+    setTimeout(() => {
+      ctx.hideNarrator();
+    }, 2000);
+  }
+
   cleanup() {
     this.seated = false;
     this.cameraLerping = false;
+    this.introPlayed = false;
+    this.introTimer = 0;
+    this.ctx = null;
   }
 
-  // Called by Game3D when 'sit' trigger fires
+  // Called by Game3D when 'sit' trigger fires (kept for compatibility)
   onSitDown(ctx: SceneContext) {
     if (this.seated) return;
-    this.seated = true;
-    ctx.player.disable();
-    this.cameraLerping = true;
+    this.startInterview(ctx);
   }
 }
