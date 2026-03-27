@@ -2,12 +2,12 @@ import * as THREE from 'three';
 
 // Reusable geometry builders for the office world
 
-export function createFloor(width: number, depth: number, color = 0x3a4a5a): THREE.Mesh {
+export function createFloor(width: number, depth: number, color = 0x937c59): THREE.Mesh {
   const geo = new THREE.PlaneGeometry(width, depth);
   const mat = new THREE.MeshStandardMaterial({
     color,
-    roughness: 0.8,
-    metalness: 0.1,
+    roughness: 0.9,
+    metalness: 0.0,
   });
   const mesh = new THREE.Mesh(geo, mat);
   mesh.rotation.x = -Math.PI / 2;
@@ -18,7 +18,7 @@ export function createFloor(width: number, depth: number, color = 0x3a4a5a): THR
 export function createWall(
   width: number,
   height: number,
-  color = 0x5a6a7a,
+  color = 0xdcd8c0, // Off-white/cream office walls
   position?: THREE.Vector3,
   rotationY = 0
 ): THREE.Mesh {
@@ -26,6 +26,8 @@ export function createWall(
   const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.9 });
   const mesh = new THREE.Mesh(geo, mat);
   mesh.position.y = height / 2;
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
   if (position) mesh.position.copy(position).setY(height / 2);
   mesh.rotation.y = rotationY;
   return mesh;
@@ -40,6 +42,8 @@ export function createBox(
   const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.7 });
   const mesh = new THREE.Mesh(geo, mat);
   mesh.position.set(...pos);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
   return mesh;
 }
 
@@ -101,271 +105,221 @@ export function createChair(x: number, z: number, rotY = 0): THREE.Group {
   return group;
 }
 
-export type FaceExpression = 'neutral' | 'angry' | 'evil_smile' | 'bored' | 'surprised';
-
-function createFaceTexture(expression: FaceExpression, skinColor = '#d4a574'): THREE.CanvasTexture {
-  const canvas = document.createElement('canvas');
-  canvas.width = 64;
-  canvas.height = 64;
-  const ctx = canvas.getContext('2d')!;
-
-  // Skin base
-  ctx.fillStyle = skinColor;
-  ctx.fillRect(0, 0, 64, 64);
-
-  ctx.fillStyle = '#1a1a1a';
-
-  switch (expression) {
-    case 'neutral':
-      // Eyes — simple dots
-      ctx.fillRect(16, 22, 8, 8);
-      ctx.fillRect(40, 22, 8, 8);
-      // Mouth — flat line
-      ctx.fillRect(20, 44, 24, 3);
-      break;
-
-    case 'angry':
-      // Eyes — narrow angry
-      ctx.fillRect(14, 24, 10, 6);
-      ctx.fillRect(40, 24, 10, 6);
-      // Angry eyebrows — diagonal
-      ctx.fillStyle = '#2a1a0a';
-      // Left brow: high outside, low inside
-      for (let i = 0; i < 12; i++) {
-        ctx.fillRect(12 + i, 16 + Math.floor(i * 0.5), 2, 3);
-      }
-      // Right brow: low inside, high outside
-      for (let i = 0; i < 12; i++) {
-        ctx.fillRect(40 + i, 22 - Math.floor(i * 0.5), 2, 3);
-      }
-      ctx.fillStyle = '#1a1a1a';
-      // Mouth — frown
-      ctx.fillRect(18, 46, 28, 3);
-      ctx.fillRect(16, 44, 4, 3);
-      ctx.fillRect(44, 44, 4, 3);
-      // Red tint around eyes
-      ctx.fillStyle = 'rgba(180, 60, 60, 0.3)';
-      ctx.fillRect(10, 18, 18, 16);
-      ctx.fillRect(36, 18, 18, 16);
-      break;
-
-    case 'evil_smile':
-      // Eyes — narrow, gleaming
-      ctx.fillRect(14, 22, 10, 6);
-      ctx.fillRect(40, 22, 10, 6);
-      // Eye glint
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(18, 22, 3, 3);
-      ctx.fillRect(44, 22, 3, 3);
-      ctx.fillStyle = '#1a1a1a';
-      // Raised eyebrows
-      ctx.fillRect(12, 14, 14, 3);
-      ctx.fillRect(38, 14, 14, 3);
-      // Wide curved smile
-      ctx.fillRect(16, 42, 32, 4);
-      ctx.fillRect(14, 40, 4, 4);
-      ctx.fillRect(46, 40, 4, 4);
-      ctx.fillRect(12, 38, 4, 3);
-      ctx.fillRect(48, 38, 4, 3);
-      // Teeth
-      ctx.fillStyle = '#eeeedd';
-      ctx.fillRect(20, 42, 4, 3);
-      ctx.fillRect(28, 42, 4, 3);
-      ctx.fillRect(36, 42, 4, 3);
-      break;
-
-    case 'bored':
-      // Half-closed eyes
-      ctx.fillRect(16, 26, 8, 4);
-      ctx.fillRect(40, 26, 8, 4);
-      // Droopy mouth
-      ctx.fillRect(22, 44, 20, 2);
-      ctx.fillRect(20, 46, 4, 2);
-      break;
-
-    case 'surprised':
-      // Wide eyes
-      ctx.fillRect(14, 20, 12, 12);
-      ctx.fillRect(38, 20, 12, 12);
-      // Pupils
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(16, 22, 4, 4);
-      ctx.fillRect(40, 22, 4, 4);
-      ctx.fillStyle = '#1a1a1a';
-      // Open mouth
-      ctx.fillRect(24, 42, 16, 10);
-      break;
-  }
-
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.minFilter = THREE.NearestFilter;
-  tex.magFilter = THREE.NearestFilter;
-  return tex;
-}
+// Skin tone palette for variety
+const SKIN_TONES = [0xf5d0a9, 0xd4a574, 0xc68642, 0x8d5524, 0xffdbac, 0xe0ac69];
+const HAIR_COLORS = [0x2a1a0a, 0x4a3020, 0x8a6a4a, 0x1a1a2a, 0x6a3a2a, 0xc0a080];
 
 export interface NPCOptions {
-  x: number;
-  z: number;
   bodyColor?: number;
-  skinColor?: string;
   label?: string;
-  seated?: boolean;       // properly seated in a chair
-  facingY?: number;       // Y rotation (radians)
-  expression?: FaceExpression;
+  skinTone?: number;
+  hairColor?: number;
+  hairStyle?: 'flat' | 'tall' | 'side' | 'bald';
+  hasGlasses?: boolean;
+  hasTie?: boolean;
+  tieColor?: number;
+  facing?: number; // rotation Y
 }
 
-export function createNPC(opts: NPCOptions): THREE.Group {
-  const {
-    x, z,
-    bodyColor = 0x4a5a6a,
-    skinColor = '#d4a574',
-    label,
-    seated = false,
-    facingY = 0,
-    expression = 'neutral',
-  } = opts;
+export function createNPC(
+  x: number, z: number,
+  bodyColorOrOpts: number | NPCOptions = 0x4a5a6a,
+  label?: string
+): THREE.Group {
+  // Support old call signature: createNPC(x, z, color, label)
+  let opts: NPCOptions;
+  if (typeof bodyColorOrOpts === 'number') {
+    opts = { bodyColor: bodyColorOrOpts, label };
+  } else {
+    opts = bodyColorOrOpts;
+  }
+
+  const bodyColor = opts.bodyColor ?? 0x4a5a6a;
+  const skinTone = opts.skinTone ?? SKIN_TONES[Math.floor(Math.random() * SKIN_TONES.length)];
+  const hairColor = opts.hairColor ?? HAIR_COLORS[Math.floor(Math.random() * HAIR_COLORS.length)];
+  const hairStyle = opts.hairStyle ?? (['flat', 'tall', 'side', 'bald'] as const)[Math.floor(Math.random() * 4)];
+  const hasGlasses = opts.hasGlasses ?? (Math.random() > 0.6);
+  const hasTie = opts.hasTie ?? (Math.random() > 0.5);
+  const tieColor = opts.tieColor ?? [0xaa2222, 0x2244aa, 0x228844, 0x886622][Math.floor(Math.random() * 4)];
 
   const group = new THREE.Group();
   group.position.set(x, 0, z);
-  group.rotation.y = facingY;
+  if (opts.facing) group.rotation.y = opts.facing;
 
-  const bodyY = seated ? 0.65 : 1.0;
-  const headY = seated ? 1.15 : 1.55;
+  const skinMat = new THREE.MeshStandardMaterial({ color: skinTone, roughness: 0.7 });
+  const bodyMat = new THREE.MeshStandardMaterial({ color: bodyColor, roughness: 0.8 });
 
-  // Body
-  const bodyHeight = seated ? 0.5 : 0.8;
-  const body = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.2, 0.2, bodyHeight, 6),
-    new THREE.MeshStandardMaterial({ color: bodyColor, roughness: 0.8 })
+  // --- Torso (tapered cylinder for slight shoulder width) ---
+  const torso = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.17, 0.22, 0.65, 8),
+    bodyMat
   );
-  body.position.y = bodyY;
-  group.add(body);
+  torso.position.y = 1.0;
+  group.add(torso);
 
-  // Arms (two small cylinders on sides)
+  // --- Shoulders (wider top) ---
+  const shoulders = new THREE.Mesh(
+    new THREE.BoxGeometry(0.5, 0.08, 0.22),
+    bodyMat
+  );
+  shoulders.position.y = 1.35;
+  group.add(shoulders);
+
+  // --- Arms ---
   for (const side of [-1, 1]) {
-    const arm = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.06, 0.06, 0.45, 4),
-      new THREE.MeshStandardMaterial({ color: bodyColor, roughness: 0.8 })
+    // Upper arm
+    const upperArm = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.06, 0.055, 0.35, 6),
+      bodyMat
     );
-    arm.position.set(side * 0.26, bodyY - 0.05, 0);
-    arm.rotation.z = side * 0.15;
-    group.add(arm);
+    upperArm.position.set(side * 0.3, 1.15, 0);
+    upperArm.rotation.z = side * 0.15; // slight outward angle
+    group.add(upperArm);
+
+    // Forearm (sleeve rolled up — skin visible)
+    const forearm = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.05, 0.045, 0.25, 6),
+      skinMat
+    );
+    forearm.position.set(side * 0.32, 0.9, 0.05);
+    forearm.rotation.z = side * 0.1;
+    forearm.rotation.x = -0.3; // slightly forward as if resting on table
+    group.add(forearm);
 
     // Hand
     const hand = new THREE.Mesh(
-      new THREE.BoxGeometry(0.08, 0.08, 0.08),
-      new THREE.MeshStandardMaterial({ color: parseInt(skinColor.replace('#', ''), 16), roughness: 0.7 })
+      new THREE.BoxGeometry(0.06, 0.04, 0.06),
+      skinMat
     );
-    hand.position.set(side * 0.28, bodyY - 0.3, 0);
+    hand.position.set(side * 0.33, 0.77, 0.1);
     group.add(hand);
   }
 
-  if (seated) {
-    // Upper legs (horizontal)
-    for (const side of [-1, 1]) {
-      const leg = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.08, 0.08, 0.35, 4),
-        new THREE.MeshStandardMaterial({ color: 0x2a2a3a, roughness: 0.8 })
-      );
-      leg.position.set(side * 0.12, 0.42, 0.15);
-      leg.rotation.x = Math.PI / 2;
-      group.add(leg);
-    }
-    // Lower legs (vertical, hanging down)
-    for (const side of [-1, 1]) {
-      const lowerLeg = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.07, 0.07, 0.35, 4),
-        new THREE.MeshStandardMaterial({ color: 0x2a2a3a, roughness: 0.8 })
-      );
-      lowerLeg.position.set(side * 0.12, 0.2, 0.32);
-      group.add(lowerLeg);
-    }
-  }
-
-  // Head — box with face texture on front
-  const faceTex = createFaceTexture(expression, skinColor);
-  const skinMat = new THREE.MeshStandardMaterial({ color: parseInt(skinColor.replace('#', ''), 16), roughness: 0.7 });
-  const faceMat = new THREE.MeshStandardMaterial({ map: faceTex, roughness: 0.7 });
-
-  // Box has 6 faces: +X, -X, +Y, -Y, +Z (front), -Z (back)
-  const headMaterials = [skinMat, skinMat, skinMat, skinMat, faceMat, skinMat];
-  const head = new THREE.Mesh(
-    new THREE.BoxGeometry(0.28, 0.28, 0.28),
-    headMaterials
+  // --- Neck ---
+  const neck = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.06, 0.07, 0.1, 6),
+    skinMat
   );
-  head.position.y = headY;
-  head.name = 'npc_head';
+  neck.position.y = 1.42;
+  group.add(neck);
+
+  // --- Head ---
+  const head = new THREE.Mesh(
+    new THREE.BoxGeometry(0.24, 0.26, 0.24),
+    skinMat
+  );
+  head.position.y = 1.58;
   group.add(head);
 
-  // Hair on top
-  const hair = new THREE.Mesh(
-    new THREE.BoxGeometry(0.3, 0.06, 0.3),
-    new THREE.MeshStandardMaterial({ color: 0x3a2a1a, roughness: 0.9 })
-  );
-  hair.position.y = headY + 0.17;
-  group.add(hair);
+  // --- Eyes ---
+  for (const side of [-1, 1]) {
+    const eye = new THREE.Mesh(
+      new THREE.BoxGeometry(0.04, 0.03, 0.02),
+      new THREE.MeshStandardMaterial({ color: 0xffffff })
+    );
+    eye.position.set(side * 0.06, 1.6, 0.12);
+    group.add(eye);
 
-  if (label) {
-    group.userData.npcLabel = label;
+    // Pupil
+    const pupil = new THREE.Mesh(
+      new THREE.BoxGeometry(0.02, 0.025, 0.02),
+      new THREE.MeshStandardMaterial({ color: 0x1a1a2a })
+    );
+    pupil.position.set(side * 0.06, 1.6, 0.13);
+    group.add(pupil);
   }
 
-  // Store expression data for dynamic changes
-  group.userData.faceMat = faceMat;
-  group.userData.skinColor = skinColor;
+  // --- Mouth (simple line) ---
+  const mouth = new THREE.Mesh(
+    new THREE.BoxGeometry(0.08, 0.015, 0.02),
+    new THREE.MeshStandardMaterial({ color: 0x9a6a5a })
+  );
+  mouth.position.set(0, 1.5, 0.12);
+  group.add(mouth);
+
+  // --- Hair ---
+  const hairMat = new THREE.MeshStandardMaterial({ color: hairColor, roughness: 0.9 });
+  if (hairStyle === 'flat') {
+    const hair = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.06, 0.26), hairMat);
+    hair.position.y = 1.74;
+    group.add(hair);
+    // Side burns
+    for (const s of [-1, 1]) {
+      const sideburn = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.12, 0.26), hairMat);
+      sideburn.position.set(s * 0.14, 1.67, 0);
+      group.add(sideburn);
+    }
+  } else if (hairStyle === 'tall') {
+    const hair = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.14, 0.26), hairMat);
+    hair.position.y = 1.78;
+    group.add(hair);
+  } else if (hairStyle === 'side') {
+    const hair = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.06, 0.26), hairMat);
+    hair.position.set(0.03, 1.74, 0);
+    group.add(hair);
+    // Side sweep
+    const sweep = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.1, 0.26), hairMat);
+    sweep.position.set(-0.12, 1.7, 0);
+    group.add(sweep);
+  }
+  // 'bald' gets no hair
+
+  // --- Glasses (if applicable) ---
+  if (hasGlasses) {
+    const glassMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+    // Frames
+    for (const side of [-1, 1]) {
+      const frame = new THREE.Mesh(new THREE.RingGeometry(0.03, 0.04, 4), glassMat);
+      frame.position.set(side * 0.06, 1.6, 0.135);
+      group.add(frame);
+    }
+    // Bridge
+    const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.01, 0.01), glassMat);
+    bridge.position.set(0, 1.6, 0.135);
+    group.add(bridge);
+    // Lens tint
+    for (const side of [-1, 1]) {
+      const lens = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.05, 0.05),
+        new THREE.MeshStandardMaterial({ color: 0x8888ff, transparent: true, opacity: 0.15 })
+      );
+      lens.position.set(side * 0.06, 1.6, 0.134);
+      group.add(lens);
+    }
+  }
+
+  // --- Tie (if applicable) ---
+  if (hasTie) {
+    const tieMat = new THREE.MeshStandardMaterial({ color: tieColor, roughness: 0.6 });
+    // Knot
+    const knot = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.03, 0.04), tieMat);
+    knot.position.set(0, 1.3, 0.18);
+    group.add(knot);
+    // Body of tie
+    const tieBody = new THREE.Mesh(
+      new THREE.BoxGeometry(0.035, 0.3, 0.02),
+      tieMat
+    );
+    tieBody.position.set(0, 1.1, 0.19);
+    group.add(tieBody);
+    // Tip (wider at end)
+    const tieTip = new THREE.Mesh(
+      new THREE.BoxGeometry(0.05, 0.04, 0.02),
+      tieMat
+    );
+    tieTip.position.set(0, 0.94, 0.19);
+    group.add(tieTip);
+  }
+
+  if (opts.label) {
+    group.userData.npcLabel = opts.label;
+  }
+
+  // Mark group for idle animation
+  group.userData.isNPC = true;
+  group.userData.idlePhase = Math.random() * Math.PI * 2; // random start phase
 
   return group;
-}
-
-/** Change an NPC's facial expression at runtime */
-export function setNPCExpression(npc: THREE.Group, expression: FaceExpression) {
-  const faceMat = npc.userData.faceMat as THREE.MeshStandardMaterial;
-  const skinColor = npc.userData.skinColor as string || '#d4a574';
-  if (faceMat) {
-    const newTex = createFaceTexture(expression, skinColor);
-    faceMat.map?.dispose();
-    faceMat.map = newTex;
-    faceMat.needsUpdate = true;
-  }
-}
-
-/** Create a speech bubble above an NPC */
-export function createSpeechBubble(text: string, npc: THREE.Group): THREE.Mesh {
-  const canvas = document.createElement('canvas');
-  canvas.width = 256;
-  canvas.height = 64;
-  const ctx = canvas.getContext('2d')!;
-
-  // Bubble background
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-  ctx.beginPath();
-  ctx.roundRect(4, 4, 248, 48, 8);
-  ctx.fill();
-
-  // Border
-  ctx.strokeStyle = '#333';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // Text
-  ctx.fillStyle = '#1a1a1a';
-  ctx.font = 'bold 16px Courier New, monospace';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(text, 128, 28);
-
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.minFilter = THREE.NearestFilter;
-  tex.magFilter = THREE.NearestFilter;
-
-  const geo = new THREE.PlaneGeometry(1.0, 0.25);
-  const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide });
-  const bubble = new THREE.Mesh(geo, mat);
-
-  // Position above head
-  const headY = npc.userData.seated ? 1.45 : 1.85;
-  bubble.position.set(npc.position.x, headY, npc.position.z);
-
-  return bubble;
 }
 
 export function createPlant(x: number, z: number): THREE.Group {
@@ -400,64 +354,90 @@ export function createTextSign(
   fontSize = 24
 ): THREE.Mesh {
   const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = Math.floor(512 * (height / width));
+  // High resolution for clear text, scaled up by 4
+  const scale = 4;
+  canvas.width = 512 * scale;
+  canvas.height = Math.floor(512 * scale * (height / width));
   const ctx = canvas.getContext('2d')!;
 
   ctx.fillStyle = bgColor;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   ctx.fillStyle = textColor;
-  ctx.font = `${fontSize}px Courier New, monospace`;
+  const scaledFontSize = fontSize * scale;
+  ctx.font = `bold ${scaledFontSize}px 'Courier New', Courier, monospace`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  // Word wrap
-  const words = text.split(' ');
+  // Handle explicit newlines first, then word wrap each paragraph
+  const paragraphs = text.split('\n');
   const lines: string[] = [];
-  let currentLine = '';
-  for (const word of words) {
-    const test = currentLine ? currentLine + ' ' + word : word;
-    if (ctx.measureText(test).width > canvas.width - 40) {
-      lines.push(currentLine);
-      currentLine = word;
-    } else {
-      currentLine = test;
+  for (const para of paragraphs) {
+    const words = para.split(' ');
+    let currentLine = '';
+    for (const word of words) {
+      const test = currentLine ? currentLine + ' ' + word : word;
+      if (ctx.measureText(test).width > canvas.width - (40 * scale)) {
+        if (currentLine) lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = test;
+      }
     }
+    if (currentLine) lines.push(currentLine);
   }
-  lines.push(currentLine);
 
-  const lineHeight = fontSize * 1.4;
+  // Auto-shrink font if text overflows vertically
+  let lineHeight = scaledFontSize * 1.25;
+  const totalTextHeight = lines.length * lineHeight;
+  if (totalTextHeight > canvas.height - (20 * scale)) {
+    const shrinkRatio = (canvas.height - (20 * scale)) / totalTextHeight;
+    const shrunkFontSize = Math.floor(scaledFontSize * shrinkRatio);
+    ctx.font = `bold ${shrunkFontSize}px 'Courier New', Courier, monospace`;
+    lineHeight = shrunkFontSize * 1.25;
+  }
+
   const startY = canvas.height / 2 - ((lines.length - 1) * lineHeight) / 2;
   lines.forEach((line, i) => {
     ctx.fillText(line, canvas.width / 2, startY + i * lineHeight);
   });
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.NearestFilter;
-  texture.magFilter = THREE.NearestFilter;
+  // Use LinearFilter for high-res text, it looks so much better when scaled down.
+  // We're dropping NearestFilter here specifically for signs so they remain readable
+  // despite the whole screen getting pixelated.
+  texture.generateMipmaps = false;
+  texture.minFilter = THREE.LinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.anisotropy = 16;
 
   const geo = new THREE.PlaneGeometry(width, height);
-  const mat = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.9 });
+  const mat = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
   return new THREE.Mesh(geo, mat);
 }
 
 export function addLighting(scene: THREE.Scene) {
-  // Warm directional (sun/office light)
-  const dir = new THREE.DirectionalLight(0xffd4a0, 1.2);
-  dir.position.set(5, 8, 3);
+  // Main directional light — no shadows for performance
+  const dir = new THREE.DirectionalLight(0xfff5e6, 2.8);
+  dir.position.set(5, 10, 3);
+  dir.castShadow = false;
   scene.add(dir);
 
-  // Cool ambient fill
-  const ambient = new THREE.AmbientLight(0x6688aa, 0.6);
+  const dir2 = new THREE.DirectionalLight(0xffffff, 2.0);
+  dir2.position.set(-5, 8, -5);
+  dir2.castShadow = false;
+  scene.add(dir2);
+
+  // Strong ambient for brightness + flat retro look
+  const ambient = new THREE.AmbientLight(0xffffff, 1.8);
   scene.add(ambient);
 
   // Hemisphere for subtle color variation
-  const hemi = new THREE.HemisphereLight(0x8899bb, 0x443322, 0.3);
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x887755, 1.4);
   scene.add(hemi);
 }
 
-export function createCeiling(width: number, depth: number, height: number, color = 0x4a5a6a): THREE.Mesh {
+export function createCeiling(width: number, depth: number, height: number, color = 0xefefef): THREE.Mesh {
   const geo = new THREE.PlaneGeometry(width, depth);
   const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.9, side: THREE.DoubleSide });
   const mesh = new THREE.Mesh(geo, mat);
@@ -480,11 +460,10 @@ export function createFluorescentLight(x: number, z: number, height: number): TH
   fixture.position.set(x, height - 0.02, z);
   group.add(fixture);
 
-  // Keep the mesh to look like a light
-  // But DO NOT add a PointLight, which lags the game significantly when tiled
   // const light = new THREE.PointLight(0xeeeeff, 0.8, 8);
   // light.position.set(x, height - 0.1, z);
   // group.add(light);
 
   return group;
 }
+

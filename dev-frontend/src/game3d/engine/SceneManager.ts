@@ -80,17 +80,35 @@ export class SceneManager {
     this.currentScene = next;
     next.setup(this.ctx);
 
-      if (this.ctx.audio) {
-        this.ctx.audio.transitionTo(sceneName);
-      }
+    // Transition audio to new scene
+    this.ctx.audio.transitionTo(sceneName);
 
-    // Fade in
-    await this.animateFade(1, 0, 0.6);
+    // Show location title card
+    const titles: Record<string, string> = {
+      street: 'ACT I — THE STREET',
+      lobby: 'ACT II — THE LOBBY',
+      interview: 'ACT III — THE INTERVIEW',
+      office: 'ACT IV — THE OFFICE',
+      desk: 'ACT V — THE DESK',
+    };
+    const title = titles[sceneName];
+    if (title) {
+      this.ctx.showNarrator(title);
+      await this.animateFade(1, 0, 0.8);
+      await this.delay(1800);
+      this.ctx.hideNarrator();
+    } else {
+      await this.animateFade(1, 0, 0.6);
+    }
     this.transitioning = false;
   }
 
   update(delta: number) {
     this.currentScene?.update(delta, this.ctx);
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   private animateFade(from: number, to: number, duration: number): Promise<void> {
@@ -110,4 +128,3 @@ export class SceneManager {
     });
   }
 }
-

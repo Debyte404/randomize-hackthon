@@ -8,10 +8,12 @@ function App() {
   if (!started) {
     return (
       <div className="menu-screen">
-        <h1 className="game-title">SHADOWINTERN</h1>
-        <p className="subtitle">A Corporate Survival Simulation</p>
+        <h1 className="game-title" data-glitch="SHADOWINTERN">SHADOWINTERN</h1>
+        <p className="subtitle">
+          &gt; A Corporate Survival Simulation<span className="terminal-cursor"></span>
+        </p>
         <button className="start-btn" onClick={() => setStarted(true)}>
-          START
+          [ START INIT ]
         </button>
         <p className="disclaimer">
           "This game is based on a true story.<br />

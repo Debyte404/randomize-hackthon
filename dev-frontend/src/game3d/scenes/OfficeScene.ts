@@ -3,27 +3,29 @@ import type { GameScene, SceneContext } from '../engine/SceneManager';
 import {
   createFloor, createWall, createDesk, createChair, createNPC, createPlant,
   createTextSign, addLighting, createCeiling, createFluorescentLight, createBox,
-  setNPCExpression, createSpeechBubble,
 } from './SceneHelpers';
 
 export class OfficeScene implements GameScene {
   name = 'office';
   private npcs: THREE.Group[] = [];
-  private bubbles: THREE.Mesh[] = [];
-  private scene!: THREE.Scene;
+  private fluorLights: THREE.PointLight[] = [];
+  private flickerTimers: number[] = [];
+  private dustParticles: THREE.Points | null = null;
+  private elapsedTime = 0;
 
   setup(ctx: SceneContext) {
     this.npcs = [];
-    this.bubbles = [];
-    this.scene = ctx.scene;
+    this.fluorLights = [];
+    this.flickerTimers = [];
+    this.elapsedTime = 0;
 
     addLighting(ctx.scene);
-    ctx.scene.background = new THREE.Color(0x3a4a5a);
+    ctx.scene.background = new THREE.Color(0x1a1e24);
 
     // Large office floor
-    const floor = createFloor(16, 20, 0x4a5a5a);
+    const floor = createFloor(18, 22, 0x4a5a5a);
     ctx.scene.add(floor);
-    ctx.scene.add(createCeiling(16, 20, 3.2));
+    ctx.scene.add(createCeiling(18, 22, 3.2, 0xd8d8d8));
 
     // Walls
     const backWall = createWall(16, 3.2, 0x5a6a7a);
@@ -44,10 +46,11 @@ export class OfficeScene implements GameScene {
     rightWall.rotation.y = Math.PI / 2;
     ctx.scene.add(rightWall);
 
-    // Fluorescent lights
+    // Fluorescent lights (removed flicker for performance)
     for (let x = -4; x <= 4; x += 4) {
       for (let z = -6; z <= 6; z += 4) {
-        ctx.scene.add(createFluorescentLight(x, z, 3.2));
+        const lightGroup = createFluorescentLight(x, z, 3.2);
+        ctx.scene.add(lightGroup);
       }
     }
 
@@ -56,71 +59,51 @@ export class OfficeScene implements GameScene {
       for (let col = 0; col < 4; col++) {
         const x = -4.5 + col * 3;
         const z = -6 + row * 4;
-        ctx.scene.add(createDesk(x, z));
+        const desk = createDesk(x, z);
+        ctx.scene.add(desk);
         ctx.scene.add(createChair(x, z + 0.8, Math.PI));
       }
     }
 
-    // === NPC Coworkers — ALL properly seated ===
-
-    // Printer coworker — standing by printer (the only one standing, on purpose)
-    const printerNPC = createNPC({
-      x: 5.5, z: -4,
+    // NPC Coworkers — properly seated with expressions
+    // Printer coworker (standing near printer)
+    const printerNPC = createNPC(5.5, -4, {
       bodyColor: 0x5a6a5a,
       label: 'coworkerPrinter',
-      seated: false,
-      facingY: Math.PI * 0.75,
-      expression: 'neutral',
+      facing: -Math.PI / 2,
     });
     ctx.scene.add(printerNPC);
     this.npcs.push(printerNPC);
 
-    // Desk coworker — seated at their desk, bored
-    const deskNPC = createNPC({
-      x: -1.5, z: -5.2,
+    // Desk coworker (seated)
+    const deskNPC = createNPC(-1.5, -5.2, {
       bodyColor: 0x6a5a5a,
       label: 'coworkerDesk',
-      seated: true,
-      facingY: 0, // facing their monitor
-      expression: 'bored',
+      facing: Math.PI,
     });
+    deskNPC.scale.y = 0.7;
+    deskNPC.position.y = 0.3;
     ctx.scene.add(deskNPC);
     this.npcs.push(deskNPC);
 
-    // Ambient NPC 1 — seated, working
-    const npc3 = createNPC({
-      x: 1.5, z: -1.2,
-      bodyColor: 0x5a5a6a,
-      seated: true,
-      facingY: 0,
-      expression: 'neutral',
-    });
-    ctx.scene.add(npc3);
-    this.npcs.push(npc3);
-
-    // Ambient NPC 2 — seated, bored
-    const npc4 = createNPC({
-      x: -4.5, z: 2.8,
-      bodyColor: 0x6a6a5a,
-      skinColor: '#c49a6c',
-      seated: true,
-      facingY: 0,
-      expression: 'bored',
-    });
-    ctx.scene.add(npc4);
-    this.npcs.push(npc4);
-
-    // Ambient NPC 3 — seated far corner
-    const npc5 = createNPC({
-      x: 4.5, z: -1.2,
-      bodyColor: 0x5a6a6a,
-      skinColor: '#b8946a',
-      seated: true,
-      facingY: 0,
-      expression: 'neutral',
-    });
-    ctx.scene.add(npc5);
-    this.npcs.push(npc5);
+    // Ambient NPCs (seated at desks)
+    const seatedPositions = [
+      { x: 1.5, z: -5.2, color: 0x5a5a6a },
+      { x: -4.5, z: -1.2, color: 0x6a6a5a },
+      { x: 4.5, z: -1.2, color: 0x5a6a6a },
+      { x: -1.5, z: 2.8, color: 0x6a5a6a },
+      { x: 1.5, z: 2.8, color: 0x5a5a5a },
+    ];
+    for (const pos of seatedPositions) {
+      const npc = createNPC(pos.x, pos.z, {
+        bodyColor: pos.color,
+        facing: Math.PI,
+      });
+      npc.scale.y = 0.7;
+      npc.position.y = 0.3;
+      ctx.scene.add(npc);
+      this.npcs.push(npc);
+    }
 
     // Printer area
     const printer = createBox(0.6, 0.4, 0.4, 0x7a7a7a, [6, 0.8, -4]);
@@ -130,7 +113,7 @@ export class OfficeScene implements GameScene {
 
     // Sprint board on wall
     const sprintBoard = createTextSign(
-      'SPRINT BOARD: TODO | IN PROGRESS | BLOCKED | DONE(empty)',
+      'SPRINT BOARD\nTODO | IN PROGRESS\nBLOCKED | DONE(empty)',
       2.5, 1.5, '#e8e8e0', '#2a2a2a', 18
     );
     sprintBoard.position.set(-7.8, 2.0, 0);
@@ -139,8 +122,8 @@ export class OfficeScene implements GameScene {
 
     // "Days without incident: 0"
     const incidentCounter = createTextSign(
-      'DAYS WITHOUT INCIDENT: 0',
-      1.2, 0.4, '#aa3333', '#eeeeee', 22
+      'DAYS WITHOUT\nINCIDENT: 0',
+      1.2, 0.5, '#aa3333', '#eeeeee', 20
     );
     incidentCounter.position.set(7.8, 2.5, -2);
     incidentCounter.rotation.y = -Math.PI / 2;
@@ -148,8 +131,8 @@ export class OfficeScene implements GameScene {
 
     // "Please Do Not Discuss Salary. Or Feelings."
     const salarySign = createTextSign(
-      'Please Do Not Discuss Salary. Or Feelings.',
-      2.0, 0.4, '#2a3a4a', '#aabbcc', 20
+      'Please Do Not Discuss\nSalary. Or Feelings.',
+      2.0, 0.5, '#2a3a4a', '#aabbcc', 18
     );
     salarySign.position.set(0, 2.8, -9.8);
     ctx.scene.add(salarySign);
@@ -172,7 +155,7 @@ export class OfficeScene implements GameScene {
     ctx.scene.add(createPlant(-6, -8));
     ctx.scene.add(createPlant(6, 8));
 
-    // YOUR desk — marked special with glow
+    // YOUR desk — last desk, marked special
     const yourDesk = createDesk(4.5, 6);
     yourDesk.traverse((child) => {
       if (child instanceof THREE.Mesh) {
@@ -186,11 +169,15 @@ export class OfficeScene implements GameScene {
     ctx.scene.add(yourDesk);
     ctx.scene.add(createChair(4.5, 6.8, Math.PI));
 
-    // Name tag
+    // Name tag on your desk
     const nameTag = createTextSign('INTERN', 0.3, 0.1, '#eeeedd', '#2a2a2a', 20);
     nameTag.position.set(4.5, 0.82, 6.3);
     nameTag.rotation.x = -Math.PI / 4;
     ctx.scene.add(nameTag);
+
+    // Floating dust particles (removed for performance)
+    // this.dustParticles = this.createDustParticles();
+    // ctx.scene.add(this.dustParticles);
 
     // Player start
     ctx.player.camera.position.set(0, 1.7, 9);
@@ -231,46 +218,88 @@ export class OfficeScene implements GameScene {
     ]);
   }
 
-  /** Make nearby seated NPCs react angrily when player gets close */
-  showAngryReaction(npcLabel: string) {
-    const npc = this.npcs.find(n => n.userData.npcLabel === npcLabel);
-    if (!npc) return;
-
-    // Set angry face
-    setNPCExpression(npc, 'angry');
-
-    // Show speech bubble
-    const phrases = [
-      "Can't you see I'm busy?!",
-      "Don't you have work to do?",
-      "New intern... great.",
-      "Headphones means NO.",
-      "I'm in the zone!",
-    ];
-    const phrase = phrases[Math.floor(Math.random() * phrases.length)];
-    const bubble = createSpeechBubble(phrase, npc);
-    this.scene.add(bubble);
-    this.bubbles.push(bubble);
-
-    // Remove bubble and reset face after 3 seconds
-    setTimeout(() => {
-      this.scene.remove(bubble);
-      bubble.geometry.dispose();
-      (bubble.material as THREE.MeshBasicMaterial).dispose();
-      this.bubbles = this.bubbles.filter(b => b !== bubble);
-      setNPCExpression(npc, 'bored');
-    }, 3000);
+  private createDustParticles(): THREE.Points {
+    const count = 60; // Halved for performance
+    const positions = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 16;
+      positions[i * 3 + 1] = Math.random() * 3;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const mat = new THREE.PointsMaterial({
+      color: 0xccccaa,
+      size: 0.02,
+      transparent: true,
+      opacity: 0.4,
+    });
+    return new THREE.Points(geo, mat);
   }
 
-  update(_delta: number, _ctx: SceneContext) {
-    // Make speech bubbles always face camera
-    for (const bubble of this.bubbles) {
-      bubble.lookAt(_ctx.player.camera.position);
+  private slowTick = 0;
+
+  update(delta: number, _ctx: SceneContext) {
+    this.elapsedTime += delta;
+    this.slowTick += delta;
+    const doSlow = this.slowTick >= 0.05; // 20fps for expensive updates
+    if (doSlow) this.slowTick = 0;
+
+    // NPC idle animations (removed for performance)
+    /*
+    if (doSlow) {
+      for (const npc of this.npcs) {
+        const phase = npc.userData.idlePhase || 0;
+        const t = this.elapsedTime + phase;
+        npc.traverse((child) => {
+          if (child instanceof THREE.Mesh && child.geometry instanceof THREE.BoxGeometry) {
+            if (Math.abs(child.position.y - 1.58) < 0.05) {
+              child.rotation.y = Math.sin(t * 0.5) * 0.08;
+              child.rotation.x = Math.sin(t * 0.3) * 0.03;
+            }
+          }
+        });
+      }
     }
+    */
+
+    // Fluorescent light flicker (removed for performance)
+    /*
+    if (doSlow) {
+      for (let i = 0; i < this.fluorLights.length; i++) {
+        this.flickerTimers[i] += this.slowTick;
+        const light = this.fluorLights[i];
+        if (Math.sin(this.elapsedTime * 15 + i * 7) > 0.97) {
+          light.intensity = 0.3 + Math.random() * 0.5;
+        } else {
+          light.intensity = 0.8;
+        }
+      }
+    }
+    */
+
+    // Dust particle drift (removed for performance)
+    /*
+    if (doSlow && this.dustParticles) {
+      const positions = this.dustParticles.geometry.attributes.position;
+      for (let i = 0; i < positions.count; i++) {
+        let y = positions.getY(i);
+        y += 0.05 * 0.05 * Math.sin(this.elapsedTime + i);
+        const x = positions.getX(i) + 0.05 * 0.02 * Math.sin(this.elapsedTime * 0.3 + i * 0.5);
+        if (y > 3) y = 0;
+        if (y < 0) y = 3;
+        positions.setY(i, y);
+        positions.setX(i, x);
+      }
+      positions.needsUpdate = true;
+    }
+    */
   }
 
   cleanup() {
     this.npcs = [];
-    this.bubbles = [];
+    this.fluorLights = [];
+    this.flickerTimers = [];
+    this.dustParticles = null;
   }
 }
