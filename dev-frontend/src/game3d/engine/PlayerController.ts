@@ -4,7 +4,7 @@ export class PlayerController {
   camera: THREE.PerspectiveCamera;
   enabled = true;
 
-  private moveSpeed = 6.0; // Increased base speed
+  private moveSpeed = 10.0; // Greatly increased base speed
   private sprintMultiplier = 2.5; // Make sprinting significantly faster
   private mouseSensitivity = 0.002;
   private pitchLimit = Math.PI * 0.44; // ~80 degrees
