@@ -46,10 +46,30 @@ export class StreetScene implements GameScene {
     for (let wx = -11.7; wx <= 11.7; wx += 2.6) {
       if (Math.abs(wx) < 1.5) continue;
       ctx.scene.add(createBox(1.0, 45.3, 14.4, finColor, [wx, 22.65, -15.2]));
+      
+      // If outermost left or right fin, add brutalist industrial structures to the blank sides
+      if (wx <= -11.6) {
+        // Left Fin Outer face (facing -X)
+        for (let wy = 5; wy < 40; wy += 5) {
+          ctx.scene.add(createBox(0.4, 3.5, 6, 0x222225, [-12.3, wy, -15.2])); // Giant vent box
+          ctx.scene.add(createBox(0.1, 3.0, 5.5, 0x111111, [-12.5, wy, -15.2])); // Vent grill 
+          // Danger stripe
+          ctx.scene.add(createBox(0.45, 0.2, 6.1, 0x886611, [-12.3, wy - 1.6, -15.2]));
+        }
+        // Vertical huge pipe going all the way up
+        ctx.scene.add(createBox(0.8, 45.3, 0.8, 0x1a1a1f, [-12.4, 22.65, -10.5]));
+      } else if (wx >= 11.6) {
+        // Right Fin Outer face (facing +X)
+        for (let wy = 5; wy < 40; wy += 5) {
+          ctx.scene.add(createBox(0.4, 3.5, 6, 0x222225, [12.3, wy, -15.2])); // Giant vent box
+          ctx.scene.add(createBox(0.1, 3.0, 5.5, 0x111111, [12.5, wy, -15.2])); // Vent grill 
+          // Danger stripe
+          ctx.scene.add(createBox(0.45, 0.2, 6.1, 0x886611, [12.3, wy - 1.6, -15.2]));
+        }
+        // Vertical huge pipe going all the way up
+        ctx.scene.add(createBox(0.8, 45.3, 0.8, 0x1a1a1f, [12.4, 22.65, -10.5]));
+      }
     }
-
-    // Upper tier (Penthouse / Top blocks)
-    ctx.scene.add(createBox(18, 15, 10, buildingColor, [0, 52.5, -15.4]));
     for (let wx = -7.8; wx <= 7.8; wx += 2.6) {
       ctx.scene.add(createBox(1.0, 15, 10.4, finColor, [wx, 52.5, -15.2]));
     }
@@ -197,6 +217,28 @@ export class StreetScene implements GameScene {
       }
     }
 
+    // L1 Massive Billboard / Wall Greebles (Breaking up the blank front face)
+    const l1Billboard = createTextSign(
+      'OBEY\nCONSUME\nPRODUCE',
+      5.5, 8.0, '#100505', '#ff3333', 52
+    );
+    l1Billboard.position.set(-15, 16, -5.99); // Stick to the front facing Z
+    // Make billboard glow
+    const l1bMat = l1Billboard.material as THREE.MeshStandardMaterial;
+    l1bMat.emissive = new THREE.Color(0x330000);
+    l1bMat.emissiveIntensity = 0.8;
+    ctx.scene.add(l1Billboard);
+
+    // L1 Industrial AC Vents on the remaining blank wall
+    for (let wy = 3; wy < 12; wy += 2.5) {
+      const ventWrap = createBox(3, 1.5, 0.4, 0x222222, [-15, wy, -5.9]);
+      const ventGrate = createBox(2.6, 1.1, 0.1, 0x111111, [-15, wy, -5.75]);
+      ctx.scene.add(ventWrap);
+      ctx.scene.add(ventGrate);
+      // Warning stripes on vents
+      ctx.scene.add(createBox(3.05, 0.2, 0.45, 0xaa8811, [-15, wy - 0.65, -5.9]));
+    }
+
     // Building L2: Wide mid-height
     const bldgL2 = createBox(6, 35, 8, 0x42454a, [-18, 17.5, -2]);
     ctx.scene.add(bldgL2);
@@ -213,6 +255,21 @@ export class StreetScene implements GameScene {
         ctx.scene.add(w);
       }
     }
+
+    // L2 Massive Front Wall Details (Pipes and Warning Signs)
+    // Giant vertical exhaust pipes
+    ctx.scene.add(createBox(0.6, 35, 0.6, 0x1a1a1f, [-19, 17.5, 2.1]));
+    ctx.scene.add(createBox(0.6, 35, 0.6, 0x1a1a1f, [-17, 17.5, 2.1]));
+    // Horizontal supports for pipes
+    for (let wy = 5; wy < 35; wy += 5) {
+      ctx.scene.add(createBox(4, 0.4, 0.4, 0x111111, [-18, wy, 2.05]));
+    }
+    // Neon vertical stripe down the middle of the pipes
+    const neonStripe = createBox(0.1, 35, 0.1, 0x00ffff, [-18, 17.5, 2.15]);
+    const neonMat = neonStripe.material as THREE.MeshStandardMaterial;
+    neonMat.emissive = new THREE.Color(0x00bbff);
+    neonMat.emissiveIntensity = 0.5;
+    ctx.scene.add(neonStripe);
 
     // Building L3: Short wide behind the others
     ctx.scene.add(createBox(10, 15, 6, 0x3e4145, [-20, 7.5, -8]));
@@ -235,6 +292,23 @@ export class StreetScene implements GameScene {
         ctx.scene.add(w);
       }
     }
+
+    // R1 Huge Cyberpunk Corporate Billboard
+    const r1Billboard = createTextSign(
+      '07:59 AM\nLATE\nDETECTED',
+      8.0, 4.0, '#0a0a0a', '#ff9900', 48
+    );
+    r1Billboard.position.set(15, 20, -2.99); // Stick to the front facing Z
+    const r1bMat = r1Billboard.material as THREE.MeshStandardMaterial;
+    r1bMat.emissive = new THREE.Color(0xaa4400);
+    r1bMat.emissiveIntensity = 0.6;
+    ctx.scene.add(r1Billboard);
+
+    // R1 Huge wall fan
+    const fanBox = createBox(4, 4, 1, 0x222222, [15, 10, -2.9]);
+    ctx.scene.add(fanBox);
+    const fanGrill = createBox(3.4, 3.4, 0.2, 0x111111, [15, 10, -2.8]);
+    ctx.scene.add(fanGrill);
 
     // Building R2: Shorter block
     const bldgR2 = createBox(8, 20, 8, 0x4a4d52, [12, 10, 4]);

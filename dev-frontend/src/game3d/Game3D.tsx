@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { PixelationPass } from './shaders/PixelationPass';
 import { PlayerController } from './engine/PlayerController';
 import { DialogueSystem } from './engine/DialogueSystem';
@@ -42,10 +43,14 @@ export default function Game3D() {
     if (!canvas) return;
 
     // Renderer
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: "high-performance" });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(1); // We handle pixelation ourselves
+    renderer.setPixelRatio(1); // Force 1:1 pixel ratio for authentic retro chunkiness
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     // Scene + Camera
     const scene = new THREE.Scene();
@@ -55,8 +60,13 @@ export default function Game3D() {
     const composer = new EffectComposer(renderer);
     const renderPass = new RenderPass(scene, camera);
     composer.addPass(renderPass);
+    
+    // Aesthetic Retro Bloom
+    const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.6, 0.4, 0.85);
+    composer.addPass(bloomPass);
 
-    const pixelPass = new PixelationPass(2.0); // Reduced pixelation size for better readability
+    // BACK TO RETRO! Crunch it up.
+    const pixelPass = new PixelationPass(2.5); // Slightly smaller pixel size for readability
     pixelPass.renderToScreen = true;
     composer.addPass(pixelPass);
 

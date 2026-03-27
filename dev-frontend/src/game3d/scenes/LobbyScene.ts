@@ -213,11 +213,11 @@ export class LobbyScene implements GameScene {
     // --- RECEPTION AREA ---
 
     // Mega-desk base (curved look using multiple boxes)
-    ctx.scene.add(createBox(6.0, 1.1, 0.8, 0xffffff, [0, 0.55, -8]));
-    const rightDesk = createBox(2.0, 1.1, 0.8, 0xffffff, [-3.4, 0.55, -7.6]);
+    ctx.scene.add(createBox(6.0, 1.1, 0.8, 0x2a2d34, [0, 0.55, -8]));
+    const rightDesk = createBox(2.0, 1.1, 0.8, 0x2a2d34, [-3.4, 0.55, -7.6]);
     rightDesk.rotation.y = Math.PI/6;
     ctx.scene.add(rightDesk);
-    const leftDesk = createBox(2.0, 1.1, 0.8, 0xffffff, [3.4, 0.55, -7.6]);
+    const leftDesk = createBox(2.0, 1.1, 0.8, 0x2a2d34, [3.4, 0.55, -7.6]);
     leftDesk.rotation.y = -Math.PI/6;
     ctx.scene.add(leftDesk);
 
@@ -248,12 +248,14 @@ export class LobbyScene implements GameScene {
     ctx.scene.add(logoSpot);
     ctx.scene.add(logoSpot.target);
 
-    const corpText = createTextSign('N E X U S   C O R P', 7.0, 1.0, '#ffffff', '#22252a', 48);
+    const corpText = createTextSign('N E X U S   C O R P', 7.0, 1.0, '#11151a', '#e0e0e0', 48);
     corpText.position.set(0, 1.5, -11.8);
     ctx.scene.add(corpText);
 
     // Receptionist NPC (now behind the grand desk)
     const receptionist = createNPC(0, -9.5, 0x4a5a6a, 'receptionist');
+    receptionist.position.y = 0.35; // Lift up behind the tall desk
+    receptionist.scale.set(1.1, 1.1, 1.1); // Make slightly larger
     ctx.scene.add(receptionist);
 
     // Add seating area in the massive atrium

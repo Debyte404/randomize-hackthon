@@ -62,19 +62,18 @@ export class OfficeScene implements GameScene {
     ctx.scene.add(printerNPC);
 
     // Desk coworker (seated — scaled down)
-    const deskNPC = createNPC(-1.5, -6, 0x6a5a5a, 'coworkerDesk');
-    deskNPC.scale.y = 0.7;
-    deskNPC.position.y = 0.3;
-    ctx.scene.add(deskNPC);
+      const deskNPC = createNPC(-1.5, -5.2, 0x6a5a5a, 'coworkerDesk');
+      deskNPC.scale.y = 0.7;
+      deskNPC.position.y = 0.3;
+      ctx.scene.add(deskNPC);
 
-    // Two more ambient NPCs
-    const npc3 = createNPC(1.5, -2, 0x5a5a6a);
-    npc3.scale.y = 0.7;
-    npc3.position.y = 0.3;
-    ctx.scene.add(npc3);
+      // Two more ambient NPCs
+      const npc3 = createNPC(1.5, -1.2, 0x5a5a6a);
+      npc3.scale.y = 0.7;
+      npc3.position.y = 0.3;
+      ctx.scene.add(npc3);
 
-    const npc4 = createNPC(-4.5, 2, 0x6a6a5a);
-    npc4.scale.y = 0.7;
+      const npc4 = createNPC(-4.5, 2.8, 0x6a6a5a);
     npc4.position.y = 0.3;
     ctx.scene.add(npc4);
 
@@ -163,7 +162,7 @@ export class OfficeScene implements GameScene {
 
     ctx.triggers.add({
       id: 'coworkerDesk',
-      position: new THREE.Vector3(-1.5, 1, -6),
+      position: new THREE.Vector3(-1.5, 1, -5.2),
       size: new THREE.Vector3(2.5, 3, 2.5),
       once: true,
       promptText: '[E] Talk',

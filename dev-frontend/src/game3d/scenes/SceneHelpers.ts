@@ -26,6 +26,8 @@ export function createWall(
   const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.9 });
   const mesh = new THREE.Mesh(geo, mat);
   mesh.position.y = height / 2;
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
   if (position) mesh.position.copy(position).setY(height / 2);
   mesh.rotation.y = rotationY;
   return mesh;
@@ -40,6 +42,8 @@ export function createBox(
   const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.7 });
   const mesh = new THREE.Mesh(geo, mat);
   mesh.position.set(...pos);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
   return mesh;
 }
 
@@ -415,18 +419,33 @@ export function addLighting(scene: THREE.Scene) {
   // Stark fluorescent directional (main office light)
   const dir = new THREE.DirectionalLight(0xfff5e6, 2.5);
   dir.position.set(5, 10, 3);
+  dir.castShadow = true;
+  dir.shadow.mapSize.width = 2048;
+  dir.shadow.mapSize.height = 2048;
+  dir.shadow.camera.near = 0.5;
+  dir.shadow.camera.far = 50;
+  dir.shadow.camera.left = -15;
+  dir.shadow.camera.right = 15;
+  dir.shadow.camera.top = 15;
+  dir.shadow.camera.bottom = -15;
+  dir.shadow.bias = -0.0005;
   scene.add(dir);
 
   const dir2 = new THREE.DirectionalLight(0xffffff, 1.8);
   dir2.position.set(-5, 8, -5);
+  dir2.castShadow = true;
+  dir2.shadow.mapSize.width = 1024;
+  dir2.shadow.mapSize.height = 1024;
+  dir2.shadow.camera.near = 0.5;
+  dir2.shadow.camera.far = 50;
   scene.add(dir2);
 
   // High ambient fill for corporate feel
-  const ambient = new THREE.AmbientLight(0xffffff, 2.0);
+  const ambient = new THREE.AmbientLight(0xffffff, 1.0); // Reduced slightly as tone mapping boosts brightness
   scene.add(ambient);
 
   // Hemisphere for subtle color variation
-  const hemi = new THREE.HemisphereLight(0xffffff, 0x887755, 1.5);
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x887755, 1.0); // Reduced slightly for better contrast
   scene.add(hemi);
 }
 
