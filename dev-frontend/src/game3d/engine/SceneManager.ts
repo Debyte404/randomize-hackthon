@@ -87,17 +87,14 @@ export class SceneManager {
       desk: 'ACT V — THE DESK',
     };
     const title = titles[sceneName];
-    if (title) this.ctx.showNarrator(title);
-
-    // Fade in
-    await this.animateFade(1, 0, 0.6);
-
-    // Hold title then hide
     if (title) {
+      this.ctx.showNarrator(title);
+      await this.animateFade(1, 0, 0.8);
       await this.delay(1800);
       this.ctx.hideNarrator();
+    } else {
+      await this.animateFade(1, 0, 0.6);
     }
-
     this.transitioning = false;
   }
 
@@ -106,7 +103,7 @@ export class SceneManager {
   }
 
   private delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   private animateFade(from: number, to: number, duration: number): Promise<void> {

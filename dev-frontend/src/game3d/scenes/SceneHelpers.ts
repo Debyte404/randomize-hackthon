@@ -406,12 +406,13 @@ export function createTextSign(
   // Use LinearFilter for high-res text, it looks so much better when scaled down.
   // We're dropping NearestFilter here specifically for signs so they remain readable
   // despite the whole screen getting pixelated.
-  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.generateMipmaps = false;
+  texture.minFilter = THREE.LinearFilter;
   texture.magFilter = THREE.LinearFilter;
-  // texture.anisotropy = 4; (optional but helpful if viewed at an angle)
-  
+  texture.anisotropy = 16;
+
   const geo = new THREE.PlaneGeometry(width, height);
-  const mat = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.9, transparent: true });
+  const mat = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
   return new THREE.Mesh(geo, mat);
 }
 
@@ -478,3 +479,4 @@ export function createFluorescentLight(x: number, z: number, height: number): TH
 
   return group;
 }
+
