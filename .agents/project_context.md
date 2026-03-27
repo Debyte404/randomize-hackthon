@@ -19,6 +19,7 @@ The approach is to tackle this problem statement by creating an engaging website
 
 #### Technical Stack
 - **Frontend Framework**: React + Vite
+- **Styling**: Tailwind CSS
 - **3D Graphics**: Three.js
 - **Deployment**: The final version will be built and hosted on itch.io as a web game.
 
