@@ -32,5 +32,6 @@ The project is organized into dedicated development environments:
 
 ## 🛠️ Stack
 - **Frontend Framework**: React + Vite
+- **Styling**: Tailwind CSS
 - **3D Rendering**: Three.js (with custom pixelation shaders)
 - **Deployment**: Web build hosted on [itch.io](https://itch.io)
