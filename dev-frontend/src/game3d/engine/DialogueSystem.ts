@@ -16,7 +16,6 @@ type DialogueCallback = (state: {
 }) => void;
 
 export class DialogueSystem {
-  private queue: DialogueSequence[] = [];
   private currentSequence: DialogueSequence | null = null;
   private currentLineIndex = 0;
   private isWaiting = false;

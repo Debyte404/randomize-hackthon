@@ -4,7 +4,6 @@ import {
   createWall, createBox, createNPC,
   createTextSign, addLighting, createCeiling,
 } from './SceneHelpers';
-import { DIALOGUE } from '../data/dialogue';
 
 export class LobbyScene implements GameScene {
   name = 'lobby';
@@ -242,7 +241,7 @@ export class LobbyScene implements GameScene {
       new THREE.Box3(new THREE.Vector3(-1.0, 0, 0.4), new THREE.Vector3(1.0, 0.4, 1.6)),
     ]);
   }
-  update(dt: number) {}
+  update() {}
   cleanup() {}
 }
 

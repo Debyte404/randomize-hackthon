@@ -9,13 +9,11 @@ import { DIALOGUE, INTERVIEW_CHOICES } from '../data/dialogue';
 export class InterviewScene implements GameScene {
   name = 'interview';
   private seated = false;
-  private choiceMade = false;
   private cameraTarget = new THREE.Vector3();
   private cameraLerping = false;
 
   setup(ctx: SceneContext) {
     this.seated = false;
-    this.choiceMade = false;
     this.cameraLerping = false;
 
     addLighting(ctx.scene);
@@ -146,7 +144,7 @@ export class InterviewScene implements GameScene {
         ctx.dialogue.play(DIALOGUE.interviewer, () => {
           // Show choices
           ctx.showChoice(INTERVIEW_CHOICES, (_index) => {
-            this.choiceMade = true;
+            // this.choiceMade = true;
             ctx.hideChoice();
             ctx.dialogue.play(DIALOGUE.interviewResult, () => {
               ctx.dialogue.play(DIALOGUE.interviewer2, () => {
@@ -162,7 +160,6 @@ export class InterviewScene implements GameScene {
 
   cleanup() {
     this.seated = false;
-    this.choiceMade = false;
     this.cameraLerping = false;
   }
 

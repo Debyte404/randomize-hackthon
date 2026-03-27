@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
@@ -28,16 +28,12 @@ export default function Game3D() {
   } | null>(null);
   const [narratorText, setNarratorText] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [escMenuOpen, setEscMenuOpen] = useState(false);
 
   // Refs to hold mutable game state
   const sceneManagerRef = useRef<SceneManager | null>(null);
+  const playerControllerRef = useRef<PlayerController | null>(null);
   const interviewSceneRef = useRef<InterviewScene | null>(null);
-
-  const handleTrigger = useCallback((id: string) => {
-    const sm = sceneManagerRef.current;
-    if (!sm) return;
-    // We'll set this up after sm is created
-  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -64,6 +60,7 @@ export default function Game3D() {
 
     // Player
     const player = new PlayerController(camera, canvas);
+    playerControllerRef.current = player;
 
     // Dialogue
     const dialogue = new DialogueSystem(setDialogueState);
@@ -182,9 +179,17 @@ export default function Game3D() {
     };
     window.addEventListener('resize', onResize);
 
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Escape') {
+        setEscMenuOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+
     return () => {
       cancelAnimationFrame(animFrameId);
       window.removeEventListener('resize', onResize);
+      window.removeEventListener('keydown', onKeyDown);
       renderer.dispose();
       composer.dispose();
     };
@@ -236,6 +241,25 @@ export default function Game3D() {
       {/* Narrator text */}
       {narratorText && (
         <div className="narrator-overlay">{narratorText}</div>
+      )}
+
+      {/* Pause / Esc Menu */}
+      {escMenuOpen && (
+        <div className="esc-menu-overlay">
+          <div className="esc-menu-title">PAUSED</div>
+          <button className="esc-menu-btn" onClick={() => {
+            setEscMenuOpen(false);
+            // After closing menu, re-acquire pointer lock if not in dialogue
+            if (playerControllerRef.current && !dialogueState.active) {
+              const canvas = canvasRef.current;
+              if (canvas) canvas.requestPointerLock();
+            }
+          }}>RESUME</button>
+          <button className="esc-menu-btn" onClick={() => { setEscMenuOpen(false); sceneManagerRef.current?.transitionTo('street'); }}>STREET</button>
+          <button className="esc-menu-btn" onClick={() => { setEscMenuOpen(false); sceneManagerRef.current?.transitionTo('lobby'); }}>LOBBY</button>
+          <button className="esc-menu-btn" onClick={() => { setEscMenuOpen(false); sceneManagerRef.current?.transitionTo('interview'); }}>INTERVIEW</button>
+          <button className="esc-menu-btn" onClick={() => { setEscMenuOpen(false); sceneManagerRef.current?.transitionTo('office'); }}>OFFICE</button>
+        </div>
       )}
       </div>
     </>

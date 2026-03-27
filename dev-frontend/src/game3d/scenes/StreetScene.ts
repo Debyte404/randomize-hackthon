@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { GameScene, SceneContext } from '../engine/SceneManager';
 import {
-  createFloor, createBox, createTextSign, addLighting, createPlant, createNPC,
+  createFloor, createBox, createTextSign, addLighting, createPlant,
 } from './SceneHelpers';
 
 export class StreetScene implements GameScene {
