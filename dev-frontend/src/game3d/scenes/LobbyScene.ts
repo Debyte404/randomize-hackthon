@@ -9,6 +9,7 @@ export class LobbyScene implements GameScene {
   name = 'lobby';
   private dustParticles: THREE.Points | null = null;
   private elapsedTime = 0;
+  private slowTick = 0;
 
   setup(ctx: SceneContext) {
     this.elapsedTime = 0;
@@ -388,7 +389,7 @@ export class LobbyScene implements GameScene {
 
     // Floating dust motes in atrium light
     {
-      const count = 80;
+      const count = 40;
       const positions = new Float32Array(count * 3);
       for (let i = 0; i < count; i++) {
         positions[i * 3] = (Math.random() - 0.5) * 18;
@@ -453,12 +454,15 @@ export class LobbyScene implements GameScene {
   }
   update(delta: number) {
     this.elapsedTime += delta;
+    this.slowTick += delta;
+    if (this.slowTick < 0.05) return; // throttle to 20fps
+    this.slowTick = 0;
     if (this.dustParticles) {
       const positions = this.dustParticles.geometry.attributes.position;
       for (let i = 0; i < positions.count; i++) {
         let y = positions.getY(i);
-        y += delta * 0.08 * Math.sin(this.elapsedTime * 0.5 + i);
-        const x = positions.getX(i) + delta * 0.015 * Math.cos(this.elapsedTime * 0.2 + i * 0.3);
+        y += 0.05 * 0.08 * Math.sin(this.elapsedTime * 0.5 + i);
+        const x = positions.getX(i) + 0.05 * 0.015 * Math.cos(this.elapsedTime * 0.2 + i * 0.3);
         if (y > 7) y = 0.5;
         if (y < 0) y = 7;
         positions.setY(i, y);

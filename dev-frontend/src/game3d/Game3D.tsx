@@ -50,9 +50,8 @@ export default function Game3D() {
     renderer.setPixelRatio(1); // Force 1:1 pixel ratio for authentic retro chunkiness
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.0;
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMappingExposure = 1.6; // Brighter
+    renderer.shadowMap.enabled = false; // Disabled for 60fps
 
     // Scene + Camera
     const scene = new THREE.Scene();
@@ -63,8 +62,8 @@ export default function Game3D() {
     const renderPass = new RenderPass(scene, camera);
     composer.addPass(renderPass);
     
-    // Aesthetic Retro Bloom
-    const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.6, 0.4, 0.85);
+    // Aesthetic Retro Bloom — half-res for performance
+    const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2), 0.5, 0.4, 0.85);
     composer.addPass(bloomPass);
 
     // BACK TO RETRO! Crunch it up.

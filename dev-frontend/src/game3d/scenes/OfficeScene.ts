@@ -226,7 +226,7 @@ export class OfficeScene implements GameScene {
   }
 
   private createDustParticles(): THREE.Points {
-    const count = 120;
+    const count = 60; // Halved for performance
     const positions = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
       positions[i * 3] = (Math.random() - 0.5) * 16;
@@ -244,45 +244,50 @@ export class OfficeScene implements GameScene {
     return new THREE.Points(geo, mat);
   }
 
+  private slowTick = 0;
+
   update(delta: number, _ctx: SceneContext) {
     this.elapsedTime += delta;
+    this.slowTick += delta;
+    const doSlow = this.slowTick >= 0.05; // 20fps for expensive updates
+    if (doSlow) this.slowTick = 0;
 
-    // NPC idle animations
-    for (const npc of this.npcs) {
-      const phase = npc.userData.idlePhase || 0;
-      const t = this.elapsedTime + phase;
-
-      // Subtle head bob
-      npc.traverse((child) => {
-        if (child instanceof THREE.Mesh && child.geometry instanceof THREE.BoxGeometry) {
-          // Head is the box at ~1.58 Y (local)
-          if (Math.abs(child.position.y - 1.58) < 0.05) {
-            child.rotation.y = Math.sin(t * 0.5) * 0.08;
-            child.rotation.x = Math.sin(t * 0.3) * 0.03;
+    // NPC idle animations — throttled to 20fps
+    if (doSlow) {
+      for (const npc of this.npcs) {
+        const phase = npc.userData.idlePhase || 0;
+        const t = this.elapsedTime + phase;
+        npc.traverse((child) => {
+          if (child instanceof THREE.Mesh && child.geometry instanceof THREE.BoxGeometry) {
+            if (Math.abs(child.position.y - 1.58) < 0.05) {
+              child.rotation.y = Math.sin(t * 0.5) * 0.08;
+              child.rotation.x = Math.sin(t * 0.3) * 0.03;
+            }
           }
-        }
-      });
-    }
-
-    // Fluorescent light flicker
-    for (let i = 0; i < this.fluorLights.length; i++) {
-      this.flickerTimers[i] += delta;
-      const light = this.fluorLights[i];
-      // Occasional subtle flicker
-      if (Math.sin(this.flickerTimers[i] * 15 + i * 7) > 0.97) {
-        light.intensity = 0.3 + Math.random() * 0.5;
-      } else {
-        light.intensity = 0.8;
+        });
       }
     }
 
-    // Dust particle drift
-    if (this.dustParticles) {
+    // Fluorescent light flicker — throttled
+    if (doSlow) {
+      for (let i = 0; i < this.fluorLights.length; i++) {
+        this.flickerTimers[i] += this.slowTick;
+        const light = this.fluorLights[i];
+        if (Math.sin(this.elapsedTime * 15 + i * 7) > 0.97) {
+          light.intensity = 0.3 + Math.random() * 0.5;
+        } else {
+          light.intensity = 0.8;
+        }
+      }
+    }
+
+    // Dust particle drift — throttled
+    if (doSlow && this.dustParticles) {
       const positions = this.dustParticles.geometry.attributes.position;
       for (let i = 0; i < positions.count; i++) {
         let y = positions.getY(i);
-        y += delta * 0.05 * Math.sin(this.elapsedTime + i);
-        const x = positions.getX(i) + delta * 0.02 * Math.sin(this.elapsedTime * 0.3 + i * 0.5);
+        y += 0.05 * 0.05 * Math.sin(this.elapsedTime + i);
+        const x = positions.getX(i) + 0.05 * 0.02 * Math.sin(this.elapsedTime * 0.3 + i * 0.5);
         if (y > 3) y = 0;
         if (y < 0) y = 3;
         positions.setY(i, y);
