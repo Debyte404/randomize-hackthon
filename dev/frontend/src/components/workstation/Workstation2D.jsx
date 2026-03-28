@@ -1084,9 +1084,8 @@ const Workstation2D = () => {
   const toggleMinimize=(id)=>{if(minimizedWindows.includes(id)){setMinimizedWindows(p=>p.filter(w=>w!==id));setActiveWindow(id)}else{setMinimizedWindows(p=>[...p,id]);if(activeWindow===id)setActiveWindow(null)}}
 
   return (
-    <div className="nxos-monitor-frame" onClick={()=>{startMenuOpen&&setStartMenuOpen(false);setContextMenu(null)}}
+    <div className="nxos-screen-overlay" onClick={()=>{startMenuOpen&&setStartMenuOpen(false);setContextMenu(null)}}
       onContextMenu={e=>{e.preventDefault();setContextMenu({x:e.clientX,y:e.clientY});playBlip(0.05)}}>
-      <div className="nxos-crt-bezel">
         <div className="nxos-scanlines"/><div className="nxos-screen-curve"/>
         {!bootComplete ? <BootSequence onComplete={()=>{setBootComplete(true);if(!localStorage.getItem('nxos_tutorial_seen')){setShowTutorial(true);localStorage.setItem('nxos_tutorial_seen','1')}}}/> : (
           <div className={`nxos-desktop ${burnout>0.7?'burnout-critical':burnout>0.5?'burnout-high':''} ${bossAlert?'nxos-screen-shake':''}`} style={{filter:burnout>0.5?`hue-rotate(${Math.sin(Date.now()*0.005)*burnout*20}deg)`:undefined}}>
@@ -1129,8 +1128,6 @@ const Workstation2D = () => {
             {gameOver&&<GameOverOverlay/>}
           </div>
         )}
-      </div>
-      <div className="nxos-monitor-stand"/><div className="nxos-monitor-base"/><div className="nxos-power-led"/>
     </div>
   )
 }

@@ -19,11 +19,11 @@ function App() {
   return (
     <div className="w-full h-full bg-black text-nexus-accent overflow-hidden selection:bg-nexus-accent selection:text-black font-mono">
       {['START', 'MAIN_MENU'].includes(gameState) && <Landing3D />}
-      
-      {/* 3D Walk-around Phases */}
-      {gameState.startsWith('3D_') && <Game3D />}
 
-      {/* 2D Workstation Phase */}
+      {/* 3D Walk-around Phases + persisted desk scene behind 2D */}
+      {(gameState.startsWith('3D_') || gameState === '2D_WORK') && <Game3D />}
+
+      {/* 2D Workstation Phase — overlaid on the 3D monitor */}
       {gameState === '2D_WORK' && <Workstation2D />}
     </div>
   )
