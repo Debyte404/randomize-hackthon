@@ -1054,3 +1054,602 @@
   border-color: #006000;
   background: #d0ffd0;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   FAKE APP CONTENT STYLES
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── NexusNet Browser ──────────────────────────────────────────── */
+.nxos-browser {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.nxos-browser-toolbar {
+  display: flex;
+  gap: 3px;
+  padding: 3px 4px;
+  background: #e0e0e0;
+  border-bottom: 1px solid #c0c0c0;
+  align-items: center;
+}
+
+.nxos-browser-urlbar {
+  flex: 1;
+  padding: 1px 4px;
+  font-size: 0.5rem;
+  background: #fff;
+  border: 2px solid;
+  border-color: #808080 #fff #fff #808080;
+  color: #000080;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.nxos-browser-page {
+  padding: 8px;
+  font-size: 0.55rem;
+  color: #000;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.nxos-browser-page h2 {
+  font-size: 0.8rem;
+  color: #000080;
+  margin: 0 0 4px 0;
+}
+
+.nxos-browser-page h3 {
+  font-size: 0.7rem;
+  color: #000080;
+  margin: 0 0 6px 0;
+}
+
+.nxos-intranet-header {
+  text-align: center;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #000080;
+}
+
+.nxos-intranet-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.nxos-intranet-card {
+  padding: 6px;
+  background: #f0f0ff;
+  border: 1px solid #c0c0e0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.5rem;
+}
+
+.nxos-intranet-card:hover {
+  background: #e0e0ff;
+  border-color: #000080;
+}
+
+.nxos-card-icon {
+  font-size: 1rem;
+}
+
+.nxos-intranet-card strong {
+  font-size: 0.55rem;
+  color: #000080;
+}
+
+.nxos-intranet-ticker {
+  padding: 4px 8px;
+  background: #000080;
+  color: #ffff00;
+  font-size: 0.45rem;
+  overflow: hidden;
+  white-space: nowrap;
+  animation: nxos-ticker 20s linear infinite;
+}
+
+@keyframes nxos-ticker {
+  from { transform: translateX(100%); }
+  to { transform: translateX(-100%); }
+}
+
+.nxos-news-item {
+  padding: 5px 6px;
+  margin-bottom: 4px;
+  background: #f8f8f8;
+  border: 1px solid #e0e0e0;
+  font-size: 0.5rem;
+  line-height: 1.4;
+}
+
+.nxos-cafe-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.5rem;
+  margin-bottom: 8px;
+}
+
+.nxos-cafe-table th,
+.nxos-cafe-table td {
+  padding: 3px 6px;
+  border: 1px solid #c0c0c0;
+  text-align: left;
+}
+
+.nxos-cafe-table th {
+  background: #c0c0c0;
+  font-weight: bold;
+}
+
+.nxos-cafe-table tr:nth-child(even) td {
+  background: #f8f8f8;
+}
+
+/* ─── Notepad ───────────────────────────────────────────────────── */
+.nxos-notepad-area {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: 'Courier New', monospace;
+  font-size: 0.6rem;
+  line-height: 1.5;
+  padding: 6px;
+  color: #000;
+  background: #fff;
+}
+
+/* ─── My Computer ───────────────────────────────────────────────── */
+.nxos-mycomputer {
+  padding: 8px;
+  font-size: 0.55rem;
+}
+
+.nxos-mc-section {
+  margin-bottom: 8px;
+}
+
+.nxos-mc-header {
+  font-weight: bold;
+  color: #000080;
+  padding-bottom: 2px;
+  border-bottom: 1px solid #c0c0c0;
+  margin-bottom: 4px;
+  font-size: 0.55rem;
+}
+
+.nxos-mc-drives {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.nxos-mc-drive {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  background: #f8f8f8;
+  border: 1px solid #e0e0e0;
+  cursor: default;
+}
+
+.nxos-mc-drive:hover {
+  background: #e0e0ff;
+  border-color: #000080;
+}
+
+.nxos-mc-drive-icon {
+  font-size: 1rem;
+}
+
+.nxos-mc-detail {
+  color: #808080;
+  font-size: 0.45rem;
+}
+
+.nxos-mc-sysinfo {
+  margin-top: 8px;
+  padding: 4px 6px;
+  background: #e0e0e0;
+  border: 1px solid #c0c0c0;
+  font-size: 0.45rem;
+  color: #404040;
+}
+
+/* ─── My Documents ──────────────────────────────────────────────── */
+.nxos-documents {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.nxos-doc-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.nxos-doc-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px;
+  font-size: 0.5rem;
+  cursor: default;
+  border: 1px solid transparent;
+}
+
+.nxos-doc-item:hover {
+  background: #e0e0ff;
+}
+
+.nxos-doc-item.selected {
+  background: #000080;
+  color: #fff;
+  border: 1px dotted #fff;
+}
+
+.nxos-doc-icon { font-size: 0.8rem; width: 16px; text-align: center; }
+.nxos-doc-name { flex: 1; }
+.nxos-doc-size { width: 40px; text-align: right; color: #808080; }
+.nxos-doc-date { width: 55px; text-align: right; color: #808080; }
+
+.nxos-doc-preview {
+  height: 100px;
+  border-top: 2px solid;
+  border-color: #808080 #fff #fff #808080;
+  padding: 4px;
+  background: #fffff0;
+  overflow-y: auto;
+}
+
+.nxos-doc-preview pre {
+  font-family: 'Courier New', monospace;
+  font-size: 0.5rem;
+  color: #000;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ─── Recycle Bin ────────────────────────────────────────────────── */
+.nxos-recycle {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nxos-recycle-empty {
+  text-align: center;
+  font-size: 0.6rem;
+  color: #808080;
+}
+
+/* ─── Notification Center ───────────────────────────────────────── */
+.nxos-notif-center {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 30px;
+  width: 240px;
+  background: #e8e8e8;
+  border-left: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  box-shadow: -2px 0 4px rgba(0,0,0,0.2);
+  z-index: 250;
+  display: flex;
+  flex-direction: column;
+  animation: nxos-notif-slide 0.15s ease-out;
+}
+
+@keyframes nxos-notif-slide {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.nxos-notif-center-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 6px;
+  background: linear-gradient(90deg, #000080, #1084d0);
+  color: #fff;
+  font-size: 0.55rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.nxos-notif-center-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.nxos-notif-center-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.nxos-notif-center-body::-webkit-scrollbar { width: 14px; }
+.nxos-notif-center-body::-webkit-scrollbar-track {
+  background: #c0c0c0;
+  border-left: 1px solid #808080;
+}
+.nxos-notif-center-body::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+}
+
+.nxos-notif-center-empty {
+  padding: 20px 10px;
+  text-align: center;
+  font-size: 0.5rem;
+  color: #808080;
+  font-style: italic;
+}
+
+.nxos-notif-center-item {
+  display: flex;
+  gap: 5px;
+  padding: 4px 5px;
+  border-bottom: 1px solid #d0d0d0;
+  font-size: 0.5rem;
+  background: #f4f4f4;
+}
+
+.nxos-notif-center-item:hover {
+  background: #e0e0ff;
+}
+
+.nxos-notif-center-item.task { border-left: 3px solid #000080; }
+.nxos-notif-center-item.email { border-left: 3px solid #804000; }
+.nxos-notif-center-item.meeting { border-left: 3px solid #006000; }
+.nxos-notif-center-item.success { border-left: 3px solid #008000; }
+.nxos-notif-center-item.error { border-left: 3px solid #cc0000; }
+
+.nxos-notif-center-icon {
+  font-size: 0.7rem;
+  flex-shrink: 0;
+  width: 16px;
+  text-align: center;
+}
+
+.nxos-notif-center-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.nxos-notif-center-msg {
+  color: #000;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.nxos-notif-center-time {
+  color: #808080;
+  font-size: 0.4rem;
+  margin-top: 1px;
+}
+
+/* ─── Systray Bell Button ───────────────────────────────────────── */
+.nxos-systray-bell {
+  background: none;
+  border: none;
+  font-size: 0.6rem;
+  cursor: pointer;
+  padding: 0 2px;
+  position: relative;
+  font-family: inherit;
+  line-height: 1;
+}
+
+.nxos-systray-bell:hover {
+  background: rgba(0,0,0,0.1);
+}
+
+.nxos-bell-badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background: #ff0000;
+  color: #fff;
+  font-size: 0.35rem;
+  font-weight: bold;
+  min-width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   VISUAL PUZZLE STYLES
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── Neural Network ────────────────────────────────────────────── */
+.nxos-nn-puzzle { padding: 6px; }
+.nxos-nn-desc { font-size: 0.5rem; color: #404040; text-align: center; margin-bottom: 6px; }
+.nxos-nn-grid { display: flex; justify-content: space-around; gap: 8px; margin-bottom: 6px; }
+.nxos-nn-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.nxos-nn-label { font-size: 0.45rem; font-weight: bold; color: #000080; margin-bottom: 2px; }
+.nxos-nn-node {
+  padding: 4px 8px; font-size: 0.5rem; border: 2px solid #808080;
+  border-radius: 3px; cursor: pointer; text-align: center; min-width: 50px;
+  background: #f0f0f0; transition: all 0.15s;
+}
+.nxos-nn-node.input { background: #e0ffe0; border-color: #408040; }
+.nxos-nn-node.node-hidden { background: #f0f0ff; border-color: #4040a0; }
+.nxos-nn-node.node-hidden.active { background: #c0c0ff; border-color: #000080; font-weight: bold; }
+.nxos-nn-node.output { background: #fff0e0; border-color: #a06000; cursor: default; }
+.nxos-nn-node:hover { transform: scale(1.05); }
+.nxos-nn-hint { font-size: 0.4rem; color: #808080; text-align: center; }
+
+/* ─── Pattern Match ─────────────────────────────────────────────── */
+.nxos-pattern-puzzle { padding: 6px; }
+.nxos-pattern-corrupted { background: #1a0000; color: #ff4444; padding: 6px; margin-bottom: 6px; border: 1px solid #ff0000; }
+.nxos-pattern-corrupted pre { font-size: 0.6rem; margin: 0; font-family: 'Courier New', monospace; }
+.nxos-pattern-label { font-size: 0.5rem; font-weight: bold; color: #000080; margin-bottom: 4px; }
+.nxos-pattern-options { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.nxos-pattern-option {
+  padding: 4px; background: #f8f8f8; border: 2px solid #c0c0c0;
+  cursor: pointer; position: relative; transition: all 0.15s;
+}
+.nxos-pattern-option:hover { border-color: #000080; background: #f0f0ff; }
+.nxos-pattern-option.selected { border-color: #008000; background: #e0ffe0; box-shadow: 0 0 4px #00800080; }
+.nxos-pattern-option pre { font-size: 0.5rem; margin: 0; font-family: 'Courier New', monospace; }
+.nxos-pattern-num { position: absolute; top: 2px; right: 4px; font-size: 0.4rem; color: #808080; }
+
+/* ─── Node Connection ───────────────────────────────────────────── */
+.nxos-node-puzzle { padding: 6px; text-align: center; }
+.nxos-node-grid { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-bottom: 6px; }
+.nxos-node-item {
+  padding: 6px 10px; font-size: 0.5rem; border: 2px solid #808080;
+  border-radius: 4px; cursor: pointer; background: #f0f0f0;
+  position: relative; transition: all 0.15s; min-width: 60px;
+}
+.nxos-node-item:hover { border-color: #000080; background: #e0e0ff; }
+.nxos-node-item.clicked { background: #000080; color: #fff; border-color: #4040ff; }
+.nxos-node-order {
+  position: absolute; top: -6px; left: -6px; background: #ff0000; color: #fff;
+  font-size: 0.4rem; width: 14px; height: 14px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-weight: bold;
+}
+.nxos-node-name { font-weight: bold; }
+
+/* ─── Sorting ───────────────────────────────────────────────────── */
+.nxos-sort-puzzle { padding: 4px; }
+.nxos-sort-item {
+  display: flex; align-items: center; gap: 4px; padding: 3px 4px;
+  background: #f4f4f4; border: 1px solid #d0d0d0; margin-bottom: 2px;
+  font-size: 0.5rem; transition: background 0.15s;
+}
+.nxos-sort-item:hover { background: #e0e0ff; }
+.nxos-sort-pos { font-weight: bold; color: #000080; width: 16px; }
+.nxos-sort-label { flex: 1; }
+.nxos-sort-btns { display: flex; gap: 1px; }
+
+/* ─── Logic Grid ────────────────────────────────────────────────── */
+.nxos-logic-puzzle { padding: 6px; text-align: center; }
+.nxos-logic-question {
+  font-size: 0.5rem; text-align: left; background: #f0f0f0; padding: 6px;
+  border: 1px solid #c0c0c0; margin-bottom: 6px; white-space: pre-wrap;
+  font-family: 'Courier New', monospace;
+}
+.nxos-logic-options { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+.nxos-logic-selected { background: #000080 !important; color: #fff !important; }
+
+/* ─── Pathfinding ───────────────────────────────────────────────── */
+.nxos-path-puzzle { padding: 6px; text-align: center; }
+.nxos-path-grid { display: inline-flex; flex-direction: column; margin-bottom: 4px; border: 2px solid #808080; }
+.nxos-path-row { display: flex; }
+.nxos-path-cell {
+  width: 32px; height: 32px; border: 1px solid #c0c0c0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.5rem; cursor: pointer; background: #fff; transition: background 0.15s;
+}
+.nxos-path-cell:hover { background: #e0e0ff; }
+.nxos-path-cell.wall { background: #404040; cursor: default; }
+.nxos-path-cell.start { background: #c0ffc0; }
+.nxos-path-cell.end { background: #ffc0c0; }
+.nxos-path-cell.active { background: #8080ff; color: #fff; font-weight: bold; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   MEETING WINDOW
+   ═══════════════════════════════════════════════════════════════════ */
+.nxos-meeting-overlay {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center; z-index: 300;
+}
+.nxos-meeting-dialog {
+  width: 380px; background: #e0e0e0;
+  border: 2px solid; border-color: #fff #808080 #808080 #fff;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+}
+.nxos-meeting-body { padding: 8px; }
+.nxos-meeting-progress { height: 8px; background: #c0c0c0; border: 1px solid #808080; margin-bottom: 6px; }
+.nxos-meeting-bar { height: 100%; background: linear-gradient(90deg, #008000, #40c040); transition: width 0.3s; }
+.nxos-meeting-round { font-size: 0.45rem; color: #808080; text-align: center; margin-bottom: 4px; }
+.nxos-meeting-speaker { font-size: 0.6rem; font-weight: bold; color: #000080; margin-bottom: 2px; }
+.nxos-meeting-text { font-size: 0.55rem; color: #404040; font-style: italic; margin-bottom: 8px; padding: 4px; background: #f8f8f8; border: 1px solid #e0e0e0; }
+.nxos-meeting-choices { display: flex; flex-direction: column; gap: 3px; }
+.nxos-meeting-choice {
+  padding: 4px 8px; font-size: 0.5rem; cursor: pointer;
+  border: 2px solid; border-color: #fff #808080 #808080 #fff;
+  background: #e0e0e0; text-align: left; transition: all 0.1s;
+}
+.nxos-meeting-choice:hover { background: #d0d0ff; border-color: #000080; }
+.nxos-meeting-choice.productive:hover { background: #d0ffd0; border-color: #006000; }
+.nxos-meeting-choice.escape:hover { background: #ffe0e0; border-color: #800000; }
+.nxos-meeting-choice.honest:hover { background: #ffe0d0; border-color: #804000; }
+
+/* ─── Meeting Alert Bar ─────────────────────────────────────────── */
+.nxos-meeting-alert {
+  position: absolute; top: 0; left: 0; right: 0;
+  background: #ffd700; border-bottom: 2px solid #b8860b;
+  z-index: 200; padding: 3px 6px;
+  animation: nxos-flash 0.5s ease-in-out infinite alternate;
+}
+@keyframes nxos-flash { from { opacity: 0.8; } to { opacity: 1; } }
+.nxos-meeting-alert-item {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.55rem; font-weight: bold;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SLACK POPUP
+   ═══════════════════════════════════════════════════════════════════ */
+.nxos-slack-popup {
+  position: absolute; bottom: 38px; left: 10px;
+  width: 220px; background: #f8f4ff;
+  border: 2px solid; border-color: #fff #808080 #808080 #fff;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.2); z-index: 210;
+  animation: nxos-slack-slide 0.2s ease-out;
+}
+@keyframes nxos-slack-slide { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.nxos-slack-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 3px 6px; background: #4A154B; color: #fff;
+  font-size: 0.5rem; font-weight: bold;
+}
+.nxos-slack-body { padding: 6px; font-size: 0.5rem; color: #000; line-height: 1.4; }
+.nxos-slack-actions { display: flex; gap: 4px; padding: 4px 6px; justify-content: flex-end; }
+.nxos-urgent-badge {
+  background: #ff0000; color: #fff; font-size: 0.4rem; font-weight: bold;
+  width: 12px; height: 12px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   REALISM EVENT POPUP
+   ═══════════════════════════════════════════════════════════════════ */
+.nxos-event-popup {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 280px; background: #fffde0;
+  border: 3px solid; border-color: #fff #808080 #808080 #fff;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.3); z-index: 280;
+  padding: 0;
+}
+.nxos-event-title {
+  padding: 4px 8px; background: linear-gradient(90deg, #c0c000, #e0e000);
+  font-size: 0.6rem; font-weight: bold; color: #000;
+  border-bottom: 1px solid #a0a000;
+}
+.nxos-event-text { padding: 8px; font-size: 0.5rem; color: #404040; line-height: 1.4; }
+.nxos-event-actions { display: flex; gap: 4px; padding: 4px 8px 8px; justify-content: center; }

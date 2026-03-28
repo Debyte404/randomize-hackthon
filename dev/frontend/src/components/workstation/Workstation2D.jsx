@@ -4,78 +4,19 @@ import { useGameStore } from '../../store/useGameStore'
 import './Workstation2D.css'
 
 // ─── Sound helpers ───────────────────────────────────────────────
-const playBlip = (volume = 0.3) => {
-  try {
-    const v = useGameStore.getState().settings.volume
-    if (v <= 0) return
-    const ctx = new (window.AudioContext || window.webkitAudioContext)()
-    const osc = ctx.createOscillator()
-    const gain = ctx.createGain()
-    osc.connect(gain); gain.connect(ctx.destination)
-    osc.type = 'square'
-    osc.frequency.setValueAtTime(800, ctx.currentTime)
-    osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.08)
-    gain.gain.setValueAtTime(volume * v, ctx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08)
-    osc.start(); osc.stop(ctx.currentTime + 0.1)
-  } catch (e) { /* audio blocked */ }
-}
+const playBlip = (vol = 0.3) => { try { const v = useGameStore.getState().settings.volume; if (v <= 0) return; const c = new AudioContext(); const o = c.createOscillator(); const g = c.createGain(); o.connect(g); g.connect(c.destination); o.type = 'square'; o.frequency.setValueAtTime(800, c.currentTime); o.frequency.exponentialRampToValueAtTime(400, c.currentTime + 0.08); g.gain.setValueAtTime(vol * v, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.08); o.start(); o.stop(c.currentTime + 0.1) } catch(e){} }
+const playError = () => { try { const v = useGameStore.getState().settings.volume; if (v <= 0) return; const c = new AudioContext(); const o = c.createOscillator(); const g = c.createGain(); o.connect(g); g.connect(c.destination); o.type = 'sawtooth'; o.frequency.setValueAtTime(200, c.currentTime); o.frequency.exponentialRampToValueAtTime(80, c.currentTime + 0.3); g.gain.setValueAtTime(0.4 * v, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.3); o.start(); o.stop(c.currentTime + 0.35) } catch(e){} }
+const playSuccess = () => { try { const v = useGameStore.getState().settings.volume; if (v <= 0) return; const c = new AudioContext(); const o = c.createOscillator(); const g = c.createGain(); o.connect(g); g.connect(c.destination); o.type = 'sine'; o.frequency.setValueAtTime(523, c.currentTime); o.frequency.setValueAtTime(659, c.currentTime + 0.1); o.frequency.setValueAtTime(784, c.currentTime + 0.2); g.gain.setValueAtTime(0.3 * v, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.35); o.start(); o.stop(c.currentTime + 0.4) } catch(e){} }
 
-const playError = () => {
-  try {
-    const v = useGameStore.getState().settings.volume
-    if (v <= 0) return
-    const ctx = new (window.AudioContext || window.webkitAudioContext)()
-    const osc = ctx.createOscillator()
-    const gain = ctx.createGain()
-    osc.connect(gain); gain.connect(ctx.destination)
-    osc.type = 'sawtooth'
-    osc.frequency.setValueAtTime(200, ctx.currentTime)
-    osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.3)
-    gain.gain.setValueAtTime(0.4 * v, ctx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3)
-    osc.start(); osc.stop(ctx.currentTime + 0.35)
-  } catch (e) { /* audio blocked */ }
-}
+const GLITCH = '█▓░▒╬╦╩╗╔╣║▐▀▄'
+const garble = (text, b) => { if (b < 0.3) return text; return text.split('').map(c => c === ' ' ? c : Math.random() < (b-0.3)*0.8 ? GLITCH[Math.floor(Math.random()*GLITCH.length)] : c).join('') }
 
-const playSuccess = () => {
-  try {
-    const v = useGameStore.getState().settings.volume
-    if (v <= 0) return
-    const ctx = new (window.AudioContext || window.webkitAudioContext)()
-    const osc = ctx.createOscillator()
-    const gain = ctx.createGain()
-    osc.connect(gain); gain.connect(ctx.destination)
-    osc.type = 'sine'
-    osc.frequency.setValueAtTime(523, ctx.currentTime)
-    osc.frequency.setValueAtTime(659, ctx.currentTime + 0.1)
-    osc.frequency.setValueAtTime(784, ctx.currentTime + 0.2)
-    gain.gain.setValueAtTime(0.3 * v, ctx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35)
-    osc.start(); osc.stop(ctx.currentTime + 0.4)
-  } catch (e) { /* audio blocked */ }
-}
-
-// ─── Garble text based on burnout ────────────────────────────────
-const GLITCH_CHARS = '█▓░▒╬╦╩╗╔╣║▐▀▄'
-const garbleText = (text, burnout) => {
-  if (burnout < 0.3) return text
-  return text.split('').map(c => {
-    if (c === ' ') return c
-    if (Math.random() < (burnout - 0.3) * 0.8) {
-      return GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)]
-    }
-    return c
-  }).join('')
-}
+const SAFE_EMPTY_ARRAY = []
+const SAFE_EMPTY_OBJECT = {}
 
 // ─── Desktop Icon ────────────────────────────────────────────────
-const DesktopIcon = ({ icon, label, onClick, x, y }) => (
-  <div
-    className="nxos-desktop-icon"
-    style={{ gridColumn: x, gridRow: y }}
-    onDoubleClick={() => { onClick(); playBlip() }}
-  >
+const DesktopIcon = ({ icon, label, onClick }) => (
+  <div className="nxos-desktop-icon" onDoubleClick={() => { onClick(); playBlip() }}>
     <div className="nxos-icon-img">{icon}</div>
     <div className="nxos-icon-label">{label}</div>
   </div>
@@ -84,184 +25,227 @@ const DesktopIcon = ({ icon, label, onClick, x, y }) => (
 // ─── Start Menu ──────────────────────────────────────────────────
 const StartMenu = ({ onClose, onOpenApp }) => (
   <div className="nxos-start-menu" onClick={e => e.stopPropagation()}>
-    <div className="nxos-start-sidebar">
-      <span className="nxos-start-sidebar-text">NexusOS 98</span>
-    </div>
+    <div className="nxos-start-sidebar"><span className="nxos-start-sidebar-text">NexusOS 98</span></div>
     <div className="nxos-start-items">
-      <div className="nxos-start-item" onClick={() => { onOpenApp('jira'); onClose() }}>
-        <span className="nxos-start-item-icon">📋</span> ShadowJira™
-      </div>
-      <div className="nxos-start-item" onClick={() => { onOpenApp('email'); onClose() }}>
-        <span className="nxos-start-item-icon">📧</span> QuickOutlook™
-      </div>
-      <div className="nxos-start-item disabled">
-        <span className="nxos-start-item-icon">🌐</span> NexusNet Explorer
-      </div>
-      <div className="nxos-start-item disabled">
-        <span className="nxos-start-item-icon">📝</span> Notepad.exe
-      </div>
-      <div className="nxos-start-divider" />
-      <div className="nxos-start-item disabled">
-        <span className="nxos-start-item-icon">⚙️</span> Control Panel
-      </div>
-      <div className="nxos-start-item disabled">
-        <span className="nxos-start-item-icon">❓</span> Help (Access Denied)
-      </div>
-      <div className="nxos-start-divider" />
-      <div className="nxos-start-item shutdown" onClick={() => {
-        useGameStore.getState().setGameState('START')
-        useWorkStore.getState().reset()
-        onClose()
-      }}>
-        <span className="nxos-start-item-icon">🔌</span> Shut Down...
-      </div>
+      {[['jira','📋','ShadowJira™'],['email','📧','QuickOutlook™'],['browser','🌐','NexusNet Explorer'],['notepad','📝','Notepad.exe']].map(([id,ic,nm])=>(
+        <div key={id} className="nxos-start-item" onClick={()=>{onOpenApp(id);onClose()}}><span className="nxos-start-item-icon">{ic}</span> {nm}</div>
+      ))}
+      <div className="nxos-start-divider"/>
+      {[['mycomputer','💻','My Computer'],['documents','📁','My Documents']].map(([id,ic,nm])=>(
+        <div key={id} className="nxos-start-item" onClick={()=>{onOpenApp(id);onClose()}}><span className="nxos-start-item-icon">{ic}</span> {nm}</div>
+      ))}
+      <div className="nxos-start-divider"/>
+      <div className="nxos-start-item shutdown" onClick={()=>{useGameStore.getState().setGameState('START');useWorkStore.getState().reset();onClose()}}><span className="nxos-start-item-icon">🔌</span> Shut Down...</div>
     </div>
   </div>
 )
 
-// ─── Window Chrome (Win98 Style) ─────────────────────────────────
-const Win98Window = ({ title, icon, children, onClose, onMinimize, isActive, zIndex }) => (
+// ─── Win98 Window Chrome ─────────────────────────────────────────
+const Win98Window = ({ title, icon, children, onClose, onMinimize, isActive, zIndex, menuItems }) => (
   <div className={`nxos-window ${isActive ? 'active' : ''}`} style={{ zIndex }}>
     <div className="nxos-window-titlebar">
-      <div className="nxos-window-titlebar-left">
-        <span className="nxos-window-icon">{icon}</span>
-        <span className="nxos-window-title">{title}</span>
-      </div>
+      <div className="nxos-window-titlebar-left"><span className="nxos-window-icon">{icon}</span><span className="nxos-window-title">{title}</span></div>
       <div className="nxos-window-buttons">
         <button className="nxos-win-btn minimize" onClick={onMinimize}>_</button>
         <button className="nxos-win-btn maximize">□</button>
         <button className="nxos-win-btn close" onClick={onClose}>✕</button>
       </div>
     </div>
-    <div className="nxos-window-menubar">
-      <span>File</span><span>Edit</span><span>View</span><span>Help</span>
-    </div>
-    <div className="nxos-window-content">
-      {children}
-    </div>
+    <div className="nxos-window-menubar">{(menuItems||['File','Edit','View','Help']).map(m=><span key={m}>{m}</span>)}</div>
+    <div className="nxos-window-content">{children}</div>
     <div className="nxos-window-statusbar">Ready</div>
   </div>
 )
 
-// ─── ShadowJira Content ──────────────────────────────────────────
-const PRIORITY_COLORS = {
-  CRITICAL: '#ff3333',
-  HIGH: '#ff8800',
-  MEDIUM: '#cc9900',
-  LOW: '#669966',
-}
+// ═══════════════════════════════════════════════════════════════════
+// VISUAL PUZZLE RENDERERS
+// ═══════════════════════════════════════════════════════════════════
 
-const ShadowJiraContent = () => {
-  const tasks = useWorkStore(s => s.tasks)
-  const completeTask = useWorkStore(s => s.completeTask)
-  const moveToInProgress = useWorkStore(s => s.moveToInProgress)
-  const burnout = useWorkStore(s => s.burnout)
-
-  const backlog = tasks.filter(t => t.status === 'backlog' && !t.expired)
-  const inProgress = tasks.filter(t => t.status === 'in_progress')
-  const done = tasks.filter(t => t.status === 'done').slice(-6)
-
-  const handleDrop = (e, targetStatus) => {
-    e.preventDefault()
-    const taskId = e.dataTransfer.getData('taskId')
-    if (targetStatus === 'in_progress') { moveToInProgress(taskId); playBlip(0.2) }
-    else if (targetStatus === 'done') { completeTask(taskId); playSuccess() }
+const NeuralNetworkPuzzle = ({ puzzle }) => {
+  const wires = useWorkStore(s => s.puzzleState.wires || SAFE_EMPTY_ARRAY)
+  const setPuzzleState = useWorkStore(s => s.setPuzzleState)
+  const [dragging, setDragging] = useState(null) // inputIdx being dragged
+  const toggleWire = (inputIdx, hiddenIdx) => {
+    setPuzzleState(prev => {
+      const existing = (prev.wires || []).findIndex(w => w[0] === inputIdx && w[1] === hiddenIdx)
+      if (existing >= 0) return { ...prev, wires: prev.wires.filter((_, i) => i !== existing) }
+      return { ...prev, wires: [...(prev.wires || []), [inputIdx, hiddenIdx]] }
+    })
+    playBlip(0.1)
   }
-
-  const TaskCard = ({ task }) => {
-    const elapsed = (Date.now() - task.createdAt) / 1000
-    const remaining = Math.max(0, task.deadline - elapsed)
-    const urgent = remaining < 10
-    return (
-      <div
-        className={`nxos-task-card ${urgent ? 'urgent' : ''}`}
-        draggable
-        onDragStart={e => e.dataTransfer.setData('taskId', task.id)}
-        onClick={() => {
-          if (task.status === 'backlog') { moveToInProgress(task.id); playBlip(0.2) }
-          else if (task.status === 'in_progress') { completeTask(task.id); playSuccess() }
-        }}
-      >
-        <div className="nxos-task-hdr">
-          <span className="nxos-task-id">{task.id}</span>
-          <span style={{ color: PRIORITY_COLORS[task.priority], fontSize: '0.55rem', fontWeight: 'bold' }}>{task.priority}</span>
-        </div>
-        <div className="nxos-task-title">{garbleText(task.title, burnout)}</div>
-        <div className="nxos-task-meta">
-          <span>+{task.points}pts</span>
-          {task.dependency && <span className="nxos-dep">🔗 {garbleText(task.dependency, burnout)}</span>}
-          {task.status !== 'done' && <span className={urgent ? 'nxos-timer-urgent' : ''}>⏱{Math.floor(remaining)}s</span>}
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="nxos-jira-board">
-      <div className="nxos-jira-col" onDrop={e => handleDrop(e, 'backlog')} onDragOver={e => e.preventDefault()}>
-        <div className="nxos-col-hdr backlog">BACKLOG ({backlog.length})</div>
-        <div className="nxos-col-body">{backlog.map(t => <TaskCard key={t.id} task={t} />)}</div>
-      </div>
-      <div className="nxos-jira-col" onDrop={e => handleDrop(e, 'in_progress')} onDragOver={e => e.preventDefault()}>
-        <div className="nxos-col-hdr progress">IN PROGRESS ({inProgress.length})</div>
-        <div className="nxos-col-body">{inProgress.map(t => <TaskCard key={t.id} task={t} />)}</div>
-      </div>
-      <div className="nxos-jira-col" onDrop={e => handleDrop(e, 'done')} onDragOver={e => e.preventDefault()}>
-        <div className="nxos-col-hdr done">DONE ({done.length})</div>
-        <div className="nxos-col-body">
-          {done.map(t => (
-            <div key={t.id} className={`nxos-task-card done ${t.expired ? 'expired' : ''}`}>
-              <span className="nxos-task-id">{t.id}</span>
-              <span className="nxos-task-title">{t.expired ? '⚠ EXPIRED' : '✓'} {t.title}</span>
+    <div className="nxos-nn-puzzle">
+      <div className="nxos-nn-desc">{puzzle.description}</div>
+      <div className="nxos-nn-grid">
+        <div className="nxos-nn-col">
+          <div className="nxos-nn-label">INPUTS</div>
+          {puzzle.inputs.map((inp, i) => (
+            <div key={i} className="nxos-nn-node input" onClick={() => setDragging(dragging === i ? null : i)} style={{outline: dragging === i ? '2px solid #ff0' : 'none'}}>
+              {inp}
             </div>
           ))}
         </div>
+        <div className="nxos-nn-col">
+          <div className="nxos-nn-label">HIDDEN</div>
+          {Array.from({length: puzzle.hiddenCount}, (_, i) => {
+            const connected = wires.filter(w => w[1] === i).map(w => w[0])
+            return (
+              <div key={i} className={`nxos-nn-node node-hidden ${connected.length > 0 ? 'active' : ''}`}
+                onClick={() => { if (dragging !== null) { toggleWire(dragging, i); setDragging(null) } }}>
+                H{i+1} {connected.length > 0 && `←[${connected.map(c => puzzle.inputs[c].split('=')[0]).join(',')}]`}
+              </div>
+            )
+          })}
+        </div>
+        <div className="nxos-nn-col">
+          <div className="nxos-nn-label">OUTPUT</div>
+          <div className="nxos-nn-node output">Target: {puzzle.target}</div>
+        </div>
+      </div>
+      <div className="nxos-nn-hint">Click an input, then click a hidden node to wire them. Click again to remove.</div>
+    </div>
+  )
+}
+
+const PatternMatchPuzzle = ({ puzzle }) => {
+  const selected = useWorkStore(s => s.puzzleState.selected)
+  const setPuzzleState = useWorkStore(s => s.setPuzzleState)
+  return (
+    <div className="nxos-pattern-puzzle">
+      <div className="nxos-pattern-corrupted"><div className="nxos-pattern-label">CORRUPTED:</div><pre>{puzzle.corrupted}</pre></div>
+      <div className="nxos-pattern-label">SELECT THE CORRECT RESTORATION:</div>
+      <div className="nxos-pattern-options">
+        {puzzle.options.map((opt, i) => (
+          <div key={i} className={`nxos-pattern-option ${selected === i ? 'selected' : ''}`} onClick={() => { setPuzzleState({ selected: i }); playBlip(0.1) }}>
+            <pre>{opt}</pre>
+            <span className="nxos-pattern-num">#{i+1}</span>
+          </div>
+        ))}
       </div>
     </div>
   )
 }
 
-// ─── QuickOutlook Content ────────────────────────────────────────
-const QuickOutlookContent = () => {
-  const emails = useWorkStore(s => s.emails)
-  const dismissEmail = useWorkStore(s => s.dismissEmail)
-  const burnout = useWorkStore(s => s.burnout)
-  const unread = emails.filter(e => !e.read)
-  const read = emails.filter(e => e.read).slice(-4)
-
+const NodeConnectionPuzzle = ({ puzzle }) => {
+  const clickedOrder = useWorkStore(s => s.puzzleState.clickedOrder || SAFE_EMPTY_ARRAY)
+  const setPuzzleState = useWorkStore(s => s.setPuzzleState)
+  const clickNode = (idx) => {
+    if (clickedOrder.includes(idx)) return
+    setPuzzleState(prev => ({ ...prev, clickedOrder: [...(prev.clickedOrder || []), idx] }))
+    playBlip(0.1)
+  }
+  const resetNodes = () => setPuzzleState({ clickedOrder: [] })
   return (
-    <div className="nxos-outlook-list">
-      {unread.length === 0 && read.length === 0 && (
-        <div className="nxos-outlook-empty">Inbox Zero. Enjoy the silence while it lasts.</div>
-      )}
-      {unread.map(email => {
-        const remaining = Math.max(0, email.expiresIn - (Date.now() - email.createdAt) / 1000)
-        return (
-          <div key={email.id} className={`nxos-email ${email.urgent ? 'urgent' : ''}`}>
-            <div className="nxos-email-hdr">
-              <strong>{garbleText(email.from, burnout)}</strong>
-              {email.urgent && <span className="nxos-urgent-badge">!</span>}
-              <span className="nxos-email-timer">⏱ {Math.floor(remaining)}s</span>
+    <div className="nxos-node-puzzle">
+      <div className="nxos-node-grid">
+        {puzzle.nodes.map((node, i) => {
+          const order = clickedOrder.indexOf(i)
+          return (
+            <div key={i} className={`nxos-node-item ${order >= 0 ? 'clicked' : ''}`} onClick={() => clickNode(i)}>
+              {order >= 0 && <span className="nxos-node-order">{order+1}</span>}
+              <span className="nxos-node-name">{node}</span>
             </div>
-            <div className="nxos-email-subject">{garbleText(email.subject, burnout)}</div>
-            <div className="nxos-email-body">{garbleText(email.body, burnout)}</div>
-            <div className="nxos-email-actions">
-              <button className="nxos-btn" onClick={() => { dismissEmail(email.id); playBlip() }}>OK</button>
-              <button className="nxos-btn" onClick={() => playError()}>Ignore</button>
-            </div>
+          )
+        })}
+      </div>
+      <button className="nxos-btn" onClick={resetNodes}>Reset Order</button>
+    </div>
+  )
+}
+
+const SortingPuzzle = ({ puzzle }) => {
+  const sortedItems = useWorkStore(s => s.puzzleState.sortedItems || puzzle.items || SAFE_EMPTY_ARRAY)
+  const setPuzzleState = useWorkStore(s => s.setPuzzleState)
+  const moveItem = (fromIdx, direction) => {
+    const items = [...sortedItems]
+    const toIdx = fromIdx + direction
+    if (toIdx < 0 || toIdx >= items.length) return
+    ;[items[fromIdx], items[toIdx]] = [items[toIdx], items[fromIdx]]
+    setPuzzleState({ sortedItems: items })
+    playBlip(0.05)
+  }
+  return (
+    <div className="nxos-sort-puzzle">
+      {sortedItems.map((item, i) => (
+        <div key={item.label} className="nxos-sort-item">
+          <span className="nxos-sort-pos">{i+1}.</span>
+          <span className="nxos-sort-label">{item.label}</span>
+          <div className="nxos-sort-btns">
+            <button className="nxos-btn" style={{height:'14px',padding:'0 3px',fontSize:'0.45rem'}} onClick={() => moveItem(i,-1)}>▲</button>
+            <button className="nxos-btn" style={{height:'14px',padding:'0 3px',fontSize:'0.45rem'}} onClick={() => moveItem(i,1)}>▼</button>
           </div>
-        )
-      })}
-      {read.map(email => (
-        <div key={email.id} className="nxos-email read">
-          <strong>{email.from}</strong> — {email.subject}
         </div>
       ))}
     </div>
   )
 }
 
-// ─── Puzzle Modal (Win98 Dialog) ─────────────────────────────────
+const LogicGridPuzzle = ({ puzzle }) => {
+  const selected = useWorkStore(s => s.puzzleState.selected)
+  const setPuzzleState = useWorkStore(s => s.setPuzzleState)
+  return (
+    <div className="nxos-logic-puzzle">
+      <pre className="nxos-logic-question">{puzzle.question}</pre>
+      <div className="nxos-logic-options">
+        {puzzle.options.map((opt, i) => (
+          <button key={i} className={`nxos-btn ${selected === i ? 'nxos-logic-selected' : ''}`} onClick={() => { setPuzzleState({ selected: i }); playBlip(0.1) }}>{opt}</button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const PathfindingPuzzle = ({ puzzle }) => {
+  const path = useWorkStore(s => s.puzzleState.path || SAFE_EMPTY_ARRAY)
+  const setPuzzleState = useWorkStore(s => s.setPuzzleState)
+  const clickCell = (r, c) => {
+    const cell = puzzle.grid[r][c]
+    if (cell === 1) return // wall
+    const newPath = [...path]
+    const existingIdx = newPath.findIndex(p => p[0] === r && p[1] === c)
+    if (existingIdx >= 0) {
+      newPath.splice(existingIdx)
+    } else {
+      if (newPath.length === 0) {
+        if (cell !== 2) return // must start at start
+        newPath.push([r, c])
+      } else {
+        const last = newPath[newPath.length - 1]
+        const dr = Math.abs(last[0] - r), dc = Math.abs(last[1] - c)
+        if ((dr === 1 && dc === 0) || (dr === 0 && dc === 1)) {
+          newPath.push([r, c])
+        } else return // must be adjacent
+      }
+    }
+    setPuzzleState({ path: newPath })
+    playBlip(0.05)
+  }
+  const CELL_ICONS = { 0: '', 1: '🧱', 2: '🚀', 3: '🎯' }
+  return (
+    <div className="nxos-path-puzzle">
+      <div className="nxos-path-grid">
+        {puzzle.grid.map((row, r) => (
+          <div key={r} className="nxos-path-row">
+            {row.map((cell, c) => {
+              const inPath = path.some(p => p[0] === r && p[1] === c)
+              const pathIdx = path.findIndex(p => p[0] === r && p[1] === c)
+              return (
+                <div key={c} className={`nxos-path-cell ${cell === 1 ? 'wall' : ''} ${inPath ? 'active' : ''} ${cell === 2 ? 'start' : ''} ${cell === 3 ? 'end' : ''}`}
+                  onClick={() => clickCell(r, c)}>
+                  {CELL_ICONS[cell] || (inPath ? pathIdx + 1 : '')}
+                </div>
+              )
+            })}
+          </div>
+        ))}
+      </div>
+      <div style={{fontSize:'0.45rem',color:'#808080',textAlign:'center'}}>Steps: {path.length} / Max: {puzzle.optimalLength + 2}</div>
+      <button className="nxos-btn" onClick={() => setPuzzleState({ path: [] })}>Clear Path</button>
+    </div>
+  )
+}
+
+// ─── Puzzle Modal (routes to correct renderer) ───────────────────
 const PuzzleModal = () => {
   const activePuzzle = useWorkStore(s => s.activePuzzle)
   const puzzleInput = useWorkStore(s => s.puzzleInput)
@@ -271,392 +255,318 @@ const PuzzleModal = () => {
   const [wrongAnswer, setWrongAnswer] = useState(false)
   const [showHint, setShowHint] = useState(false)
   const inputRef = useRef(null)
-
-  useEffect(() => {
-    if (activePuzzle && inputRef.current) inputRef.current.focus()
-    setWrongAnswer(false)
-    setShowHint(false)
-  }, [activePuzzle])
-
+  useEffect(() => { if (activePuzzle && inputRef.current) inputRef.current.focus(); setWrongAnswer(false); setShowHint(false) }, [activePuzzle])
   if (!activePuzzle) return null
   const { puzzle, taskId } = activePuzzle
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    const ok = submitPuzzle()
-    if (ok) { playSuccess() }
-    else { setWrongAnswer(true); playError(); setTimeout(() => setWrongAnswer(false), 600) }
-  }
-
+  const handleSubmit = (e) => { e?.preventDefault(); const ok = submitPuzzle(); if (ok) playSuccess(); else { setWrongAnswer(true); playError(); setTimeout(() => setWrongAnswer(false), 600) } }
+  const isVisual = puzzle.type !== 'text_input'
   return (
     <div className="nxos-puzzle-overlay" onClick={e => e.stopPropagation()}>
-      <div className={`nxos-puzzle-dialog ${wrongAnswer ? 'shake' : ''}`}>
-        <div className="nxos-window-titlebar" style={{ background: 'linear-gradient(90deg, #000080, #1084d0)' }}>
-          <div className="nxos-window-titlebar-left">
-            <span className="nxos-window-icon">🧩</span>
-            <span className="nxos-window-title">Code Review Required — {taskId}</span>
-          </div>
-          <div className="nxos-window-buttons">
-            <button className="nxos-win-btn close" onClick={() => { cancelPuzzle(); playBlip() }}>✕</button>
-          </div>
+      <div className={`nxos-puzzle-dialog ${wrongAnswer ? 'shake' : ''}`} style={isVisual ? {width:'460px'} : undefined}>
+        <div className="nxos-window-titlebar" style={{background:'linear-gradient(90deg,#000080,#1084d0)'}}>
+          <div className="nxos-window-titlebar-left"><span className="nxos-window-icon">🧩</span><span className="nxos-window-title">Code Review — {taskId}</span></div>
+          <div className="nxos-window-buttons"><button className="nxos-win-btn close" onClick={()=>{cancelPuzzle();playBlip()}}>✕</button></div>
         </div>
         <div className="nxos-puzzle-body">
           <div className="nxos-puzzle-type">{puzzle.prompt}</div>
-          <pre className="nxos-puzzle-code">{puzzle.code}</pre>
-          <form onSubmit={handleSubmit} className="nxos-puzzle-form">
-            <input
-              ref={inputRef}
-              type="text"
-              className="nxos-puzzle-input"
-              value={puzzleInput}
-              onChange={e => setPuzzleInput(e.target.value)}
-              placeholder="Type your answer..."
-              autoComplete="off"
-              spellCheck={false}
-            />
-            <div className="nxos-puzzle-actions">
-              <button type="submit" className="nxos-btn">SUBMIT</button>
-              <button type="button" className="nxos-btn" onClick={() => setShowHint(true)}>HINT</button>
-              <button type="button" className="nxos-btn" onClick={() => { cancelPuzzle(); playBlip() }}>SKIP (-5pts)</button>
-            </div>
-          </form>
+          {puzzle.type === 'text_input' && (
+            <>
+              <pre className="nxos-puzzle-code">{puzzle.code}</pre>
+              <form onSubmit={handleSubmit} className="nxos-puzzle-form">
+                <input ref={inputRef} type="text" className="nxos-puzzle-input" value={puzzleInput} onChange={e=>setPuzzleInput(e.target.value)} placeholder="Type your answer..." autoComplete="off" spellCheck={false}/>
+              </form>
+            </>
+          )}
+          {puzzle.type === 'neural_network' && <NeuralNetworkPuzzle puzzle={puzzle}/>}
+          {puzzle.type === 'pattern_match' && <PatternMatchPuzzle puzzle={puzzle}/>}
+          {puzzle.type === 'node_connection' && <NodeConnectionPuzzle puzzle={puzzle}/>}
+          {puzzle.type === 'sorting' && <SortingPuzzle puzzle={puzzle}/>}
+          {puzzle.type === 'logic_grid' && <LogicGridPuzzle puzzle={puzzle}/>}
+          {puzzle.type === 'pathfinding' && <PathfindingPuzzle puzzle={puzzle}/>}
+          {puzzle.description && <div style={{fontSize:'0.5rem',color:'#404040',textAlign:'center'}}>{puzzle.description}</div>}
+          <div className="nxos-puzzle-actions">
+            <button className="nxos-btn" onClick={handleSubmit}>SUBMIT</button>
+            <button className="nxos-btn" onClick={()=>setShowHint(true)}>HINT</button>
+            <button className="nxos-btn" onClick={()=>{cancelPuzzle();playBlip()}}>SKIP</button>
+          </div>
           {showHint && <div className="nxos-puzzle-hint">💡 {puzzle.hint}</div>}
           {wrongAnswer && <div className="nxos-puzzle-wrong">✘ INCORRECT — Try again</div>}
-          <div className="nxos-puzzle-bonus">Bonus: +{puzzle.points} pts on correct answer</div>
+          <div className="nxos-puzzle-bonus">Bonus: +{puzzle.points} pts</div>
         </div>
       </div>
     </div>
   )
 }
 
-// ─── OS Popup Balloons (System Tray) ─────────────────────────────
-const OsPopupBalloons = () => {
-  const osPopups = useWorkStore(s => s.osPopups)
-  const dismissOsPopup = useWorkStore(s => s.dismissOsPopup)
-
-  if (osPopups.length === 0) return null
-
+// ═══════════════════════════════════════════════════════════════════
+// MEETING WINDOW
+// ═══════════════════════════════════════════════════════════════════
+const MeetingWindow = () => {
+  const activeMeeting = useWorkStore(s => s.activeMeeting)
+  const meetingChoice = useWorkStore(s => s.meetingChoice)
+  const endMeetingEarly = useWorkStore(s => s.endMeetingEarly)
+  if (!activeMeeting) return null
+  const { meeting, dialogues, currentDialogue, timer, totalTime } = activeMeeting
+  const dialogue = dialogues[currentDialogue]
+  if (!dialogue) return null
+  const progress = Math.max(0, timer / totalTime)
   return (
-    <div className="nxos-os-balloons">
-      {osPopups.slice(-3).map(popup => (
-        <div key={popup.id} className={`nxos-os-balloon ${popup.type}`} onClick={() => dismissOsPopup(popup.id)}>
-          <div className="nxos-balloon-header">
-            <span className="nxos-balloon-icon">{popup.icon}</span>
-            <span className="nxos-balloon-title">{popup.title}</span>
-            <button className="nxos-balloon-close" onClick={e => { e.stopPropagation(); dismissOsPopup(popup.id) }}>✕</button>
+    <div className="nxos-meeting-overlay" onClick={e => e.stopPropagation()}>
+      <div className="nxos-meeting-dialog">
+        <div className="nxos-window-titlebar" style={{background:'linear-gradient(90deg,#006000,#40a040)'}}>
+          <div className="nxos-window-titlebar-left"><span className="nxos-window-icon">📅</span><span className="nxos-window-title">{meeting.title} — {meeting.room}</span></div>
+          <div className="nxos-window-buttons"><button className="nxos-win-btn close" onClick={endMeetingEarly}>✕</button></div>
+        </div>
+        <div className="nxos-meeting-body">
+          <div className="nxos-meeting-progress"><div className="nxos-meeting-bar" style={{width:`${progress*100}%`}}/></div>
+          <div className="nxos-meeting-round">Round {currentDialogue+1}/{dialogues.length}</div>
+          <div className="nxos-meeting-speaker">{dialogue.speaker}:</div>
+          <div className="nxos-meeting-text">{dialogue.text}</div>
+          <div className="nxos-meeting-choices">
+            {dialogue.choices.map((c, i) => (
+              <button key={i} className={`nxos-meeting-choice ${c.type}`} onClick={() => { meetingChoice(i); playBlip() }}>{c.label}</button>
+            ))}
           </div>
-          <div className="nxos-balloon-text">{popup.text}</div>
         </div>
-      ))}
-    </div>
-  )
-}
-
-// ─── Notification Toasts ─────────────────────────────────────────
-const NotificationToast = () => {
-  const notifications = useWorkStore(s => s.notifications)
-  const clearNotification = useWorkStore(s => s.clearNotification)
-  useEffect(() => {
-    if (notifications.length > 0) {
-      const t = setTimeout(() => clearNotification(notifications[0].id), 3000)
-      return () => clearTimeout(t)
-    }
-  }, [notifications, clearNotification])
-  return (
-    <div className="nxos-notifications">
-      {notifications.slice(0, 3).map(n => (
-        <div key={n.id} className={`nxos-notification ${n.type}`}>{n.text}</div>
-      ))}
-    </div>
-  )
-}
-
-// ─── Game Over ───────────────────────────────────────────────────
-const GameOverOverlay = () => {
-  const score = useWorkStore(s => s.score)
-  const completedCount = useWorkStore(s => s.completedCount)
-  const globalClock = useWorkStore(s => s.globalClock)
-  const reset = useWorkStore(s => s.reset)
-  const setGameState = useGameStore(s => s.setGameState)
-  const setHighScore = useGameStore(s => s.setHighScore)
-  const addPlaythrough = useGameStore(s => s.addPlaythrough)
-
-  useEffect(() => {
-    setHighScore(score)
-    addPlaythrough({ score, tasksCompleted: completedCount, timeElapsed: Math.floor(globalClock), date: new Date().toISOString() })
-  }, [])
-
-  return (
-    <div className="nxos-bsod">
-      <div className="nxos-bsod-inner">
-        <h1>NexusOS</h1>
-        <p>A fatal exception 0E has occurred at 0028:C0011E36 in VXD BURNOUT(01) +</p>
-        <p>00010E36. The current employee will be terminated.</p>
-        <br/>
-        <p>* Press RETRY to restart your shift.</p>
-        <p>* Press LOG OFF to exit to desktop.</p>
-        <br/>
-        <div className="nxos-bsod-stats">
-          <span>PRODUCTIVITY: {score} pts</span>
-          <span>TASKS COMPLETED: {completedCount}</span>
-          <span>TIME SURVIVED: {Math.floor(globalClock / 60)}m {Math.floor(globalClock % 60)}s</span>
-        </div>
-        <br/>
-        <div className="nxos-bsod-actions">
-          <button className="nxos-btn" onClick={() => reset()}>RETRY SHIFT</button>
-          <button className="nxos-btn" onClick={() => { reset(); setGameState('START') }}>LOG OFF</button>
-        </div>
-        <br/>
-        <p>Press any key to continue _</p>
-      </div>
-    </div>
-  )
-}
-
-// ─── Boot Sequence ───────────────────────────────────────────────
-const BootSequence = ({ onComplete }) => {
-  const [lines, setLines] = useState([])
-  const [progress, setProgress] = useState(0)
-  const BOOT_LINES = [
-    'NexusOS 98 [Version 4.10.1998]',
-    '(C) Copyright Nexus Corp 1981-1998.',
-    '',
-    'HIMEM is testing extended memory...done.',
-    'Loading NexusOS 98 Command Interpreter...',
-    'NEXUS CORP PROPRIETARY - UNAUTHORIZED ACCESS PROHIBITED',
-    '',
-    'C:\\NEXUS> Loading WIN98.SYS...',
-    'C:\\NEXUS> Mounting network drives...',
-    'C:\\NEXUS> Connecting to NEXUSCORP\\INTRANET...',
-    'C:\\NEXUS> Authenticating user: INTERN_9921...',
-    'C:\\NEXUS> WARNING: 1,492 tasks pending',
-    'C:\\NEXUS> Loading desktop...',
-  ]
-
-  useEffect(() => {
-    let idx = 0
-    const iv = setInterval(() => {
-      if (idx < BOOT_LINES.length) {
-        setLines(prev => [...prev, BOOT_LINES[idx]])
-        setProgress((idx + 1) / BOOT_LINES.length)
-        if (BOOT_LINES[idx]) playBlip(0.05)
-        idx++
-      } else { clearInterval(iv); setTimeout(onComplete, 600) }
-    }, 350)
-    return () => clearInterval(iv)
-  }, [])
-
-  return (
-    <div className="nxos-boot">
-      <div className="nxos-boot-terminal">
-        {lines.map((line, i) => <div key={i} className="nxos-boot-line">{line}</div>)}
-        <span className="nxos-boot-cursor">_</span>
-      </div>
-      <div className="nxos-boot-bar">
-        <div className="nxos-boot-bar-fill" style={{ width: `${progress * 100}%` }} />
       </div>
     </div>
   )
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// ─── MAIN WORKSTATION COMPONENT ──────────────────────────────────
+// SLACK POPUP
 // ═══════════════════════════════════════════════════════════════════
-const Workstation2D = () => {
-  const tick = useWorkStore(s => s.tick)
-  const spawnTask = useWorkStore(s => s.spawnTask)
-  const spawnEmail = useWorkStore(s => s.spawnEmail)
-  const spawnMeeting = useWorkStore(s => s.spawnMeeting)
-  const activePuzzle = useWorkStore(s => s.activePuzzle)
-  const bootComplete = useWorkStore(s => s.bootComplete)
-  const setBootComplete = useWorkStore(s => s.setBootComplete)
-  const gameOver = useWorkStore(s => s.gameOver)
-  const activeWindow = useWorkStore(s => s.activeWindow)
-  const setActiveWindow = useWorkStore(s => s.setActiveWindow)
+const SlackPopup = () => {
+  const messages = useWorkStore(s => s.slackMessages)
+  const respondSlack = useWorkStore(s => s.respondSlack)
+  const ignoreSlack = useWorkStore(s => s.ignoreSlack)
+  if (messages.length === 0) return null
+  const msg = messages[0]
+  return (
+    <div className="nxos-slack-popup">
+      <div className="nxos-slack-header">
+        <span>💬 Slack — {msg.channel}</span>
+        {msg.urgent && <span className="nxos-urgent-badge">!</span>}
+      </div>
+      <div className="nxos-slack-body">
+        <strong>{msg.from}:</strong> {msg.text}
+      </div>
+      <div className="nxos-slack-actions">
+        <button className="nxos-btn" onClick={()=>{respondSlack(msg.id);playBlip()}}>Reply</button>
+        <button className="nxos-btn" onClick={()=>{ignoreSlack(msg.id);playBlip()}}>Ignore</button>
+      </div>
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// REALISM EVENT DIALOG
+// ═══════════════════════════════════════════════════════════════════
+const EventDialog = () => {
+  const event = useWorkStore(s => s.activeEvent)
+  const dismissEvent = useWorkStore(s => s.dismissEvent)
+  const takeCoffeeBreak = useWorkStore(s => s.takeCoffeeBreak)
+  if (!event) return null
+  return (
+    <div className="nxos-event-popup">
+      <div className="nxos-event-title">{event.title}</div>
+      <div className="nxos-event-text">{event.text}</div>
+      <div className="nxos-event-actions">
+        {event.effect === 'offer_break' ? (
+          <>
+            <button className="nxos-btn" onClick={()=>{takeCoffeeBreak();playSuccess()}}>☕ Take Break</button>
+            <button className="nxos-btn" onClick={()=>{dismissEvent();playBlip()}}>Keep Working</button>
+          </>
+        ) : (
+          <button className="nxos-btn" onClick={()=>{dismissEvent();playBlip()}}>OK</button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// REMAINING CONTENT COMPONENTS (from previous code, kept intact)
+// ═══════════════════════════════════════════════════════════════════
+const PRIORITY_COLORS = { CRITICAL: '#ff3333', HIGH: '#ff8800', MEDIUM: '#cc9900', LOW: '#669966' }
+
+const ShadowJiraContent = () => {
+  const tasks = useWorkStore(s => s.tasks)
+  const completeTask = useWorkStore(s => s.completeTask)
+  const moveToInProgress = useWorkStore(s => s.moveToInProgress)
   const burnout = useWorkStore(s => s.burnout)
-  const score = useWorkStore(s => s.score)
-  const completedCount = useWorkStore(s => s.completedCount)
-  const globalClock = useWorkStore(s => s.globalClock)
-  const dayPhase = useWorkStore(s => s.dayPhase)
-  const reset = useWorkStore(s => s.reset)
-  const unreadEmails = useWorkStore(s => s.emails.filter(e => !e.read).length)
-
-  const [startMenuOpen, setStartMenuOpen] = useState(false)
-  const [minimizedWindows, setMinimizedWindows] = useState([])
-
-  const animFrameRef = useRef(null)
-  const lastTimeRef = useRef(performance.now())
-  const taskTimerRef = useRef(0)
-  const emailTimerRef = useRef(0)
-  const meetingTimerRef = useRef(0)
-
-  // Reset on mount
-  useEffect(() => { reset() }, [])
-
-  // Game loop
-  useEffect(() => {
-    if (!bootComplete) return
-    const gameLoop = (time) => {
-      const delta = Math.min((time - lastTimeRef.current) / 1000, 0.1)
-      lastTimeRef.current = time
-      tick(delta)
-
-      taskTimerRef.current += delta
-      const taskInterval = Math.max(3, 12 - useWorkStore.getState().globalClock * 0.02)
-      if (taskTimerRef.current > taskInterval) { spawnTask(); taskTimerRef.current = 0 }
-
-      emailTimerRef.current += delta
-      const emailInterval = Math.max(8, 25 - useWorkStore.getState().globalClock * 0.03)
-      if (emailTimerRef.current > emailInterval) { spawnEmail(); emailTimerRef.current = 0 }
-
-      // Meetings spawn less frequently
-      meetingTimerRef.current += delta
-      const meetingInterval = Math.max(20, 45 - useWorkStore.getState().globalClock * 0.03)
-      if (meetingTimerRef.current > meetingInterval) { spawnMeeting(); meetingTimerRef.current = 0 }
-
-      animFrameRef.current = requestAnimationFrame(gameLoop)
-    }
-    spawnTask(); spawnTask(); spawnTask()
-    lastTimeRef.current = performance.now()
-    animFrameRef.current = requestAnimationFrame(gameLoop)
-    return () => { if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current) }
-  }, [bootComplete])
-
-  const formatClock = (seconds) => {
-    const h = 9 + Math.floor(seconds / 60)
-    const m = Math.floor(seconds % 60)
-    const period = h >= 12 ? 'PM' : 'AM'
-    return `${h > 12 ? h - 12 : h}:${String(m).padStart(2, '0')} ${period}`
-  }
-
-  const toggleMinimize = (windowId) => {
-    setMinimizedWindows(prev =>
-      prev.includes(windowId) ? prev.filter(w => w !== windowId) : [...prev, windowId]
+  const backlog = tasks.filter(t => t.status === 'backlog' && !t.expired)
+  const inProgress = tasks.filter(t => t.status === 'in_progress')
+  const done = tasks.filter(t => t.status === 'done').slice(-6)
+  const handleDrop = (e, s) => { e.preventDefault(); const id = e.dataTransfer.getData('taskId'); if (s === 'in_progress') { moveToInProgress(id); playBlip(0.2) } else if (s === 'done') { completeTask(id); playBlip() } }
+  const TaskCard = ({ task }) => {
+    const elapsed = (Date.now() - task.createdAt) / 1000
+    const remaining = Math.max(0, task.deadline - elapsed)
+    const urgent = remaining < 15
+    return (
+      <div className={`nxos-task-card ${urgent?'urgent':''}`} draggable onDragStart={e=>e.dataTransfer.setData('taskId',task.id)}
+        onClick={()=>{ if (task.status==='backlog'){moveToInProgress(task.id);playBlip(0.2)} else if(task.status==='in_progress'){completeTask(task.id);playBlip()} }}>
+        <div className="nxos-task-hdr"><span className="nxos-task-id">{task.id}{task.aiGenerated?' 🤖':''}</span><span style={{color:PRIORITY_COLORS[task.priority],fontSize:'0.55rem',fontWeight:'bold'}}>{task.priority}</span></div>
+        <div className="nxos-task-title">{garble(task.title, burnout)}</div>
+        <div className="nxos-task-meta"><span>+{task.points}pts</span>{task.status!=='done'&&<span className={urgent?'nxos-timer-urgent':''}>⏱{Math.floor(remaining)}s</span>}</div>
+      </div>
     )
   }
+  return (
+    <div className="nxos-jira-board">
+      <div className="nxos-jira-col" onDrop={e=>handleDrop(e,'backlog')} onDragOver={e=>e.preventDefault()}><div className="nxos-col-hdr backlog">BACKLOG ({backlog.length})</div><div className="nxos-col-body">{backlog.map(t=><TaskCard key={t.id} task={t}/>)}</div></div>
+      <div className="nxos-jira-col" onDrop={e=>handleDrop(e,'in_progress')} onDragOver={e=>e.preventDefault()}><div className="nxos-col-hdr progress">IN PROGRESS ({inProgress.length})</div><div className="nxos-col-body">{inProgress.map(t=><TaskCard key={t.id} task={t}/>)}</div></div>
+      <div className="nxos-jira-col" onDrop={e=>handleDrop(e,'done')} onDragOver={e=>e.preventDefault()}><div className="nxos-col-hdr done">DONE ({done.length})</div><div className="nxos-col-body">{done.map(t=>(<div key={t.id} className={`nxos-task-card done ${t.expired?'expired':''}`}><span className="nxos-task-id">{t.id}</span><span className="nxos-task-title">{t.expired?'⚠ EXPIRED':'✓'} {t.title}</span></div>))}</div></div>
+    </div>
+  )
+}
 
-  const openApp = (appId) => {
-    setActiveWindow(appId)
-    setMinimizedWindows(prev => prev.filter(w => w !== appId))
+const QuickOutlookContent = () => {
+  const emails = useWorkStore(s => s.emails); const dismissEmail = useWorkStore(s => s.dismissEmail); const burnout = useWorkStore(s => s.burnout)
+  const unread = emails.filter(e => !e.read); const read = emails.filter(e => e.read).slice(-4)
+  return (
+    <div className="nxos-outlook-list">
+      {unread.length===0&&read.length===0&&<div className="nxos-outlook-empty">Inbox Zero. Enjoy the silence.</div>}
+      {unread.map(email => { const rem = Math.max(0,email.expiresIn-(Date.now()-email.createdAt)/1000); return (
+        <div key={email.id} className={`nxos-email ${email.urgent?'urgent':''}`}><div className="nxos-email-hdr"><strong>{garble(email.from,burnout)}</strong>{email.urgent&&<span className="nxos-urgent-badge">!</span>}<span className="nxos-email-timer">⏱{Math.floor(rem)}s</span></div><div className="nxos-email-subject">{garble(email.subject,burnout)}</div><div className="nxos-email-body">{garble(email.body,burnout)}</div><div className="nxos-email-actions"><button className="nxos-btn" onClick={()=>{dismissEmail(email.id);playBlip()}}>OK</button><button className="nxos-btn" onClick={()=>playError()}>Ignore</button></div></div>
+      )})}
+      {read.map(email => <div key={email.id} className="nxos-email read"><strong>{email.from}</strong> — {email.subject}</div>)}
+    </div>
+  )
+}
+
+// ─── Fake Apps (NexusNet, Notepad, MyComputer, MyDocuments, RecycleBin) ──
+const NexusNetContent = () => {
+  const [page, setPage] = useState('home')
+  const pages = {
+    home: <div className="nxos-browser-page"><div className="nxos-intranet-header"><h2>🏢 NexusCorp Intranet</h2><p style={{color:'#808080',fontSize:'0.5rem'}}>Welcome, INTERN_9921</p></div><div className="nxos-intranet-grid">{[['news','📰','Company News','Q4 Earnings!'],['cafe','☕','Café Menu','Mystery Meat Monday'],['hr','👥','HR Portal','3 overdue trainings'],['memes','😂','Water Cooler','Office gossip']].map(([id,ic,t,s])=>(<div key={id} className="nxos-intranet-card" onClick={()=>setPage(id)}><span className="nxos-card-icon">{ic}</span><strong>{t}</strong><span>{s}</span></div>))}</div><div className="nxos-intranet-ticker">📢 Mandatory fun Friday • 🏆 Employee of month: VACANT • ⚠️ Parking lot B closed since 2019</div></div>,
+    news: <div className="nxos-browser-page"><h3>📰 News</h3><div className="nxos-news-item"><strong>Q4 Earnings Beat</strong><br/>CEO credits "synergistic paradigm shifts." Stock up 0.3%.</div><div className="nxos-news-item"><strong>Open Office Plan</strong><br/>Walls removed. Noise complaints up 400%.</div><button className="nxos-btn" onClick={()=>setPage('home')}>← Back</button></div>,
+    cafe: <div className="nxos-browser-page"><h3>☕ Café</h3><table className="nxos-cafe-table"><thead><tr><th>Item</th><th>Price</th><th>Status</th></tr></thead><tbody><tr><td>Mystery Meat</td><td>$4.99</td><td style={{color:'green'}}>Available</td></tr><tr><td>Lukewarm Coffee</td><td>$2.50</td><td style={{color:'green'}}>Available</td></tr><tr><td>Sad Salad</td><td>$7.99</td><td style={{color:'red'}}>SOLD OUT</td></tr></tbody></table><button className="nxos-btn" onClick={()=>setPage('home')}>← Back</button></div>,
+    hr: <div className="nxos-browser-page"><h3>👥 HR</h3><div style={{background:'#fff0f0',border:'1px solid red',padding:'6px',marginBottom:'6px',fontSize:'0.5rem'}}>⚠️ 3 overdue trainings</div><div className="nxos-news-item"><strong>PTO:</strong> 0.5 days remaining</div><button className="nxos-btn" onClick={()=>setPage('home')}>← Back</button></div>,
+    memes: <div className="nxos-browser-page"><h3>😂 Water Cooler</h3><div className="nxos-news-item"><strong>@Kevin:</strong> whoever microwaves fish, please stop</div><div className="nxos-news-item"><strong>@DevOps:</strong> deploy succeeded! JK. Rollback.</div><button className="nxos-btn" onClick={()=>setPage('home')}>← Back</button></div>,
   }
+  return <div className="nxos-browser"><div className="nxos-browser-toolbar"><button className="nxos-btn" style={{height:'16px',padding:'0 4px'}} onClick={()=>setPage('home')}>🏠</button><div className="nxos-browser-urlbar">http://intranet.nexuscorp.local/</div></div>{pages[page]||pages.home}</div>
+}
+
+const NotepadContent = () => { const [t,setT]=useState(`=== README.txt ===\nWelcome to NexusCorp, Intern #9921!\n\nTIPS:\n1. Coffee machine on Floor 3 works\n2. Don't sit in Chad's chair\n3. "Reply All" is never the answer\n4. The printer is sentient; be nice\n5. If Brad asks about "synergies," nod\n\nEMERGENCY CONTACTS:\n- IT: ext.0000 (3-5 business days)\n- HR: ext.1234 (at "off-site retreat")\n- Manager: ??? (unknown)\n\nGood luck!\n— Onboarding Bot`); return <textarea className="nxos-notepad-area" value={t} onChange={e=>setT(e.target.value)} spellCheck={false}/> }
+const MyComputerContent = () => <div className="nxos-mycomputer"><div className="nxos-mc-section"><div className="nxos-mc-header">Hard Disks</div><div className="nxos-mc-drives"><div className="nxos-mc-drive"><span className="nxos-mc-drive-icon">💾</span><div><strong>C: (NexusOS)</strong><br/><span className="nxos-mc-detail">4.2 GB free of 8 GB</span></div></div><div className="nxos-mc-drive"><span className="nxos-mc-drive-icon">💿</span><div><strong>D: (DATA)</strong><br/><span className="nxos-mc-detail">127 MB free of 2 GB</span></div></div></div></div><div className="nxos-mc-sysinfo"><strong>System:</strong> Pentium II 400MHz | 128MB RAM | NexusOS 98 SE</div></div>
+const MyDocumentsContent = () => { const [sel,setSel]=useState(null); const files=[{name:'new_hire_checklist.doc',icon:'📄',content:'Step 1: Find desk\nStep 2: Login\nStep 3: Look busy'},{name:'totally_not_resume.doc',icon:'📄',content:'Dear [Better Company]...\n[CORRUPTED]'},{name:'meeting_notes_FINAL_v2.doc',icon:'📄',content:'Notes:\n- TBD\n- Follow up: Next meeting\n- Duration: 2h (could be email)'},{name:'cat_pictures',icon:'📁',content:'🐱 cat1.jpg\n🐱 cat2.jpg\n🐱 spreadsheet.jpg.exe ⚠️'}]; return <div className="nxos-documents"><div className="nxos-doc-list">{files.map(f=><div key={f.name} className={`nxos-doc-item ${sel===f.name?'selected':''}`} onClick={()=>setSel(f.name)}><span className="nxos-doc-icon">{f.icon}</span><span className="nxos-doc-name">{f.name}</span></div>)}</div>{sel&&<div className="nxos-doc-preview"><pre>{files.find(f=>f.name===sel)?.content}</pre></div>}</div> }
+const RecycleBinContent = () => <div className="nxos-recycle"><div className="nxos-recycle-empty"><span style={{fontSize:'2rem'}}>🗑️</span><p>Empty.</p><p style={{color:'#808080',fontSize:'0.5rem'}}>Like your work-life balance.</p></div></div>
+
+// ─── NotificationCenter, OsPopupBalloons, NotificationToast, GameOver, Boot ──
+const NotificationCenter = ({ onOpenApp, onClose }) => { const h=useWorkStore(s=>s.notificationHistory); const cl=useWorkStore(s=>s.clearHistory); const fmt=ts=>{const s=Math.floor((Date.now()-ts)/1000);return s<60?`${s}s ago`:`${Math.floor(s/60)}m ago`}; return <div className="nxos-notif-center" onClick={e=>e.stopPropagation()}><div className="nxos-notif-center-header"><span>🔔 Notifications</span><div className="nxos-notif-center-actions"><button className="nxos-btn" style={{height:'14px',fontSize:'0.45rem',padding:'0 4px'}} onClick={cl}>Clear</button><button className="nxos-btn" style={{height:'14px',fontSize:'0.45rem',padding:'0 4px'}} onClick={onClose}>✕</button></div></div><div className="nxos-notif-center-body">{h.length===0&&<div className="nxos-notif-center-empty">No notifications yet.</div>}{[...h].reverse().slice(0,30).map(n=><div key={n.id} className={`nxos-notif-center-item ${n.type}`} onClick={()=>{if(n.app){onOpenApp(n.app);onClose()}}} style={{cursor:n.app?'pointer':'default'}}><span className="nxos-notif-center-icon">{n.icon}</span><div className="nxos-notif-center-text"><div className="nxos-notif-center-msg">{n.text}</div><div className="nxos-notif-center-time">{fmt(n.createdAt)}</div></div></div>)}</div></div> }
+const OsPopupBalloons = () => { const p=useWorkStore(s=>s.osPopups); const d=useWorkStore(s=>s.dismissOsPopup); if(!p.length) return null; return <div className="nxos-os-balloons">{p.slice(-3).map(pp=><div key={pp.id} className={`nxos-os-balloon ${pp.type}`} onClick={()=>d(pp.id)}><div className="nxos-balloon-header"><span className="nxos-balloon-icon">{pp.icon}</span><span className="nxos-balloon-title">{pp.title}</span><button className="nxos-balloon-close" onClick={e=>{e.stopPropagation();d(pp.id)}}>✕</button></div><div className="nxos-balloon-text">{pp.text}</div></div>)}</div> }
+const NotificationToast = () => { const n=useWorkStore(s=>s.notifications); const c=useWorkStore(s=>s.clearNotification); useEffect(()=>{ if(n.length>0){const t=setTimeout(()=>c(n[0].id),3000);return()=>clearTimeout(t)} },[n,c]); return <div className="nxos-notifications">{n.slice(0,3).map(x=><div key={x.id} className={`nxos-notification ${x.type}`}>{x.text}</div>)}</div> }
+const GameOverOverlay = () => { const s=useWorkStore(x=>x.score); const cc=useWorkStore(x=>x.completedCount); const gc=useWorkStore(x=>x.globalClock); const r=useWorkStore(x=>x.reset); const sg=useGameStore(x=>x.setGameState); const sh=useGameStore(x=>x.setHighScore); const ap=useGameStore(x=>x.addPlaythrough); useEffect(()=>{sh(s);ap({score:s,tasksCompleted:cc,timeElapsed:Math.floor(gc),date:new Date().toISOString()})},[]);return <div className="nxos-bsod"><div className="nxos-bsod-inner"><h1>NexusOS</h1><p>A fatal exception 0E has occurred in VXD BURNOUT(01)</p><br/><div className="nxos-bsod-stats"><span>SCORE: {s} pts</span><span>TASKS: {cc}</span><span>TIME: {Math.floor(gc/60)}m {Math.floor(gc%60)}s</span></div><br/><div className="nxos-bsod-actions"><button className="nxos-btn" onClick={()=>r()}>RETRY</button><button className="nxos-btn" onClick={()=>{r();sg('START')}}>LOG OFF</button></div></div></div> }
+
+const BootSequence = ({ onComplete }) => { const [lines,setLines]=useState([]); const [prog,setProg]=useState(0); const BL=['NexusOS 98 [Version 4.10.1998]','(C) Nexus Corp 1981-1998.','','HIMEM testing extended memory...done.','Loading WIN98.SYS...','NEXUSCORP PROPRIETARY','','C:\\NEXUS> Mounting drives...','C:\\NEXUS> Connecting to INTRANET...','C:\\NEXUS> Authenticating INTERN_9921...','C:\\NEXUS> Loading desktop...']; useEffect(()=>{let i=0;const iv=setInterval(()=>{if(i<BL.length){setLines(p=>[...p,BL[i]]);setProg((i+1)/BL.length);if(BL[i])playBlip(0.05);i++}else{clearInterval(iv);setTimeout(onComplete,600)}},300);return()=>clearInterval(iv)},[]); return <div className="nxos-boot"><div className="nxos-boot-terminal">{lines.map((l,i)=><div key={i} className="nxos-boot-line">{l}</div>)}<span className="nxos-boot-cursor">_</span></div><div className="nxos-boot-bar"><div className="nxos-boot-bar-fill" style={{width:`${prog*100}%`}}/></div></div> }
+
+// ═══════════════════════════════════════════════════════════════════
+// APP REGISTRY
+// ═══════════════════════════════════════════════════════════════════
+const APP_REGISTRY = {
+  jira:{title:'ShadowJira™ — Sprint Board',icon:'📋',menu:['File','Sprint','View','Help']},
+  email:{title:'QuickOutlook™ — Inbox',icon:'📧',menu:['File','Edit','View','Tools','Help']},
+  browser:{title:'NexusNet Explorer',icon:'🌐',menu:['File','Edit','View','Favorites','Help']},
+  notepad:{title:'Notepad — README.txt',icon:'📝',menu:['File','Edit','Format','Help']},
+  mycomputer:{title:'My Computer',icon:'💻',menu:['File','Edit','View','Help']},
+  documents:{title:'My Documents',icon:'📁',menu:['File','Edit','View','Help']},
+  recyclebin:{title:'Recycle Bin',icon:'🗑️',menu:['File','Edit','View','Help']},
+}
+const APP_CONTENT = { jira:()=><ShadowJiraContent/>, email:()=><QuickOutlookContent/>, browser:()=><NexusNetContent/>, notepad:()=><NotepadContent/>, mycomputer:()=><MyComputerContent/>, documents:()=><MyDocumentsContent/>, recyclebin:()=><RecycleBinContent/> }
+
+// ═══════════════════════════════════════════════════════════════════
+// MAIN WORKSTATION COMPONENT
+// ═══════════════════════════════════════════════════════════════════
+const MODE_LABELS = { balanced:'🎯', deadline_rush:'⏱️', meeting_hell:'📅', nightmare:'💀' }
+
+const Workstation2D = () => {
+  const tick=useWorkStore(s=>s.tick); const spawnTask=useWorkStore(s=>s.spawnTask); const spawnEmail=useWorkStore(s=>s.spawnEmail); const spawnMeeting=useWorkStore(s=>s.spawnMeeting); const spawnSlack=useWorkStore(s=>s.spawnSlack); const triggerEvent=useWorkStore(s=>s.triggerEvent)
+  const activePuzzle=useWorkStore(s=>s.activePuzzle); const activeMeeting=useWorkStore(s=>s.activeMeeting); const activeEvent=useWorkStore(s=>s.activeEvent)
+  const bootComplete=useWorkStore(s=>s.bootComplete); const setBootComplete=useWorkStore(s=>s.setBootComplete)
+  const gameOver=useWorkStore(s=>s.gameOver); const activeWindow=useWorkStore(s=>s.activeWindow); const setActiveWindow=useWorkStore(s=>s.setActiveWindow)
+  const burnout=useWorkStore(s=>s.burnout); const score=useWorkStore(s=>s.score); const completedCount=useWorkStore(s=>s.completedCount); const globalClock=useWorkStore(s=>s.globalClock)
+  const gameMode=useWorkStore(s=>s.gameMode); const setGameMode=useWorkStore(s=>s.setGameMode)
+  const reset=useWorkStore(s=>s.reset); const meetings=useWorkStore(s=>s.meetings); const startMeeting=useWorkStore(s=>s.startMeeting)
+  const unreadEmails=useWorkStore(s=>s.emails.filter(e=>!e.read).length)
+  const notifCount=useWorkStore(s=>s.notificationHistory.length)
+
+  const [startMenuOpen,setStartMenuOpen]=useState(false); const [notifCenterOpen,setNotifCenterOpen]=useState(false)
+  const [openWindows,setOpenWindows]=useState([]); const [minimizedWindows,setMinimizedWindows]=useState([])
+  const animFrameRef=useRef(null); const lastTimeRef=useRef(performance.now()); const taskTimerRef=useRef(0); const emailTimerRef=useRef(0); const meetingTimerRef=useRef(0); const slackTimerRef=useRef(0); const eventTimerRef=useRef(0)
+
+  useEffect(()=>{reset()},[])
+
+  // Check for meetings to attend
+  const pendingMeetings = meetings.filter(m => !m.dismissed && (Date.now()-m.createdAt)/1000 > m.startsIn - 5 && (Date.now()-m.createdAt)/1000 < m.startsIn + 10)
+
+  useEffect(()=>{
+    if(!bootComplete)return
+    const ModeSpawn = { balanced:{t:20,e:30,m:60,s:40,ev:90}, deadline_rush:{t:12,e:25,m:80,s:50,ev:60}, meeting_hell:{t:25,e:35,m:20,s:30,ev:70}, nightmare:{t:10,e:15,m:25,s:20,ev:45} }
+    const cfg=ModeSpawn[gameMode]||ModeSpawn.balanced
+    const gameLoop=(time)=>{
+      const delta=Math.min((time-lastTimeRef.current)/1000,0.1); lastTimeRef.current=time; tick(delta)
+      const clock=useWorkStore.getState().globalClock
+      taskTimerRef.current+=delta; const tI=Math.max(5,cfg.t-clock*0.04); if(taskTimerRef.current>tI){spawnTask().catch(()=>{});taskTimerRef.current=0}
+      emailTimerRef.current+=delta; const eI=Math.max(8,cfg.e-clock*0.05); if(emailTimerRef.current>eI){spawnEmail();emailTimerRef.current=0}
+      meetingTimerRef.current+=delta; const mI=Math.max(15,cfg.m-clock*0.06); if(meetingTimerRef.current>mI){spawnMeeting();meetingTimerRef.current=0}
+      slackTimerRef.current+=delta; const sI=Math.max(12,cfg.s-clock*0.04); if(slackTimerRef.current>sI){spawnSlack();slackTimerRef.current=0}
+      eventTimerRef.current+=delta; const evI=Math.max(30,cfg.ev-clock*0.08); if(eventTimerRef.current>evI){triggerEvent();eventTimerRef.current=0}
+      animFrameRef.current=requestAnimationFrame(gameLoop)
+    }
+    spawnTask().catch(()=>{});spawnTask().catch(()=>{})
+    lastTimeRef.current=performance.now()
+    animFrameRef.current=requestAnimationFrame(gameLoop)
+    return()=>{if(animFrameRef.current)cancelAnimationFrame(animFrameRef.current)}
+  },[bootComplete,gameMode])
+
+  const formatClock=(s)=>{const h=9+Math.floor(s/60);const m=Math.floor(s%60);return `${h>12?h-12:h}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`}
+  const openApp=(id)=>{setActiveWindow(id);if(!openWindows.includes(id))setOpenWindows(p=>[...p,id]);setMinimizedWindows(p=>p.filter(w=>w!==id))}
+  const closeApp=(id)=>{setOpenWindows(p=>p.filter(w=>w!==id));setMinimizedWindows(p=>p.filter(w=>w!==id));if(activeWindow===id)setActiveWindow(openWindows.filter(w=>w!==id)[0]||null)}
+  const toggleMinimize=(id)=>{if(minimizedWindows.includes(id)){setMinimizedWindows(p=>p.filter(w=>w!==id));setActiveWindow(id)}else{setMinimizedWindows(p=>[...p,id]);if(activeWindow===id)setActiveWindow(null)}}
 
   return (
-    <div className="nxos-monitor-frame" onClick={() => startMenuOpen && setStartMenuOpen(false)}>
-      {/* CRT Bezel */}
+    <div className="nxos-monitor-frame" onClick={()=>startMenuOpen&&setStartMenuOpen(false)}>
       <div className="nxos-crt-bezel">
-        {/* Scanlines overlay */}
-        <div className="nxos-scanlines" />
-        {/* Screen curvature overlay */}
-        <div className="nxos-screen-curve" />
-
-        {!bootComplete ? (
-          <BootSequence onComplete={() => setBootComplete(true)} />
-        ) : (
-          <div className="nxos-desktop" style={{
-            filter: burnout > 0.5 ? `hue-rotate(${Math.sin(Date.now() * 0.005) * burnout * 20}deg)` : undefined
-          }}>
-
-            {/* ═══ Desktop Icons ═══ */}
+        <div className="nxos-scanlines"/><div className="nxos-screen-curve"/>
+        {!bootComplete ? <BootSequence onComplete={()=>setBootComplete(true)}/> : (
+          <div className="nxos-desktop" style={{filter:burnout>0.5?`hue-rotate(${Math.sin(Date.now()*0.005)*burnout*20}deg)`:undefined}}>
             <div className="nxos-desktop-icons">
-              <DesktopIcon icon="📋" label="ShadowJira" onClick={() => openApp('jira')} />
-              <DesktopIcon icon="📧" label="QuickOutlook" onClick={() => openApp('email')} />
-              <DesktopIcon icon="🌐" label="NexusNet" onClick={() => {}} />
-              <DesktopIcon icon="📁" label="My Documents" onClick={() => {}} />
-              <DesktopIcon icon="🗑️" label="Recycle Bin" onClick={() => {}} />
-              <DesktopIcon icon="📝" label="README.txt" onClick={() => {}} />
-              <DesktopIcon icon="💻" label="My Computer" onClick={() => {}} />
-              <DesktopIcon icon="🔧" label="System32" onClick={() => {}} />
+              <DesktopIcon icon="📋" label="ShadowJira" onClick={()=>openApp('jira')}/>
+              <DesktopIcon icon="📧" label="QuickOutlook" onClick={()=>openApp('email')}/>
+              <DesktopIcon icon="🌐" label="NexusNet" onClick={()=>openApp('browser')}/>
+              <DesktopIcon icon="📁" label="My Documents" onClick={()=>openApp('documents')}/>
+              <DesktopIcon icon="🗑️" label="Recycle Bin" onClick={()=>openApp('recyclebin')}/>
+              <DesktopIcon icon="📝" label="README.txt" onClick={()=>openApp('notepad')}/>
+              <DesktopIcon icon="💻" label="My Computer" onClick={()=>openApp('mycomputer')}/>
             </div>
-
-            {/* ═══ Windows ═══ */}
-            {activeWindow === 'jira' && !minimizedWindows.includes('jira') && (
-              <Win98Window
-                title="ShadowJira™ — Sprint Board"
-                icon="📋"
-                isActive={true}
-                zIndex={20}
-                onClose={() => setActiveWindow(null)}
-                onMinimize={() => toggleMinimize('jira')}
-              >
-                <ShadowJiraContent />
-              </Win98Window>
-            )}
-
-            {activeWindow === 'email' && !minimizedWindows.includes('email') && (
-              <Win98Window
-                title={`QuickOutlook™ — Inbox (${unreadEmails} unread)`}
-                icon="📧"
-                isActive={true}
-                zIndex={20}
-                onClose={() => setActiveWindow(null)}
-                onMinimize={() => toggleMinimize('email')}
-              >
-                <QuickOutlookContent />
-              </Win98Window>
-            )}
-
-            {/* ═══ Win98 Taskbar ═══ */}
+            {openWindows.map((appId,idx)=>{if(minimizedWindows.includes(appId))return null;const reg=APP_REGISTRY[appId];if(!reg)return null;const C=APP_CONTENT[appId];return <Win98Window key={appId} title={appId==='email'?`${reg.title} (${unreadEmails})`:reg.title} icon={reg.icon} menuItems={reg.menu} isActive={activeWindow===appId} zIndex={activeWindow===appId?20:10+idx} onClose={()=>closeApp(appId)} onMinimize={()=>toggleMinimize(appId)}><C/></Win98Window>})}
+            {/* Pending meetings bar */}
+            {pendingMeetings.length>0&&!activeMeeting&&<div className="nxos-meeting-alert">{pendingMeetings.map(m=><div key={m.id} className="nxos-meeting-alert-item"><span>📅 {m.title} starting NOW!</span><button className="nxos-btn" onClick={()=>startMeeting(m.id)}>Join</button></div>)}</div>}
+            {/* Taskbar */}
             <div className="nxos-taskbar">
-              <button
-                className={`nxos-start-btn ${startMenuOpen ? 'pressed' : ''}`}
-                onClick={e => { e.stopPropagation(); setStartMenuOpen(!startMenuOpen); playBlip() }}
-              >
-                <span className="nxos-start-flag">⊞</span> Start
-              </button>
-
-              <div className="nxos-taskbar-divider" />
-
-              {/* Running app buttons */}
-              <div className="nxos-taskbar-apps">
-                {activeWindow === 'jira' && (
-                  <button
-                    className={`nxos-taskbar-app-btn ${!minimizedWindows.includes('jira') ? 'active' : ''}`}
-                    onClick={() => { toggleMinimize('jira'); openApp('jira') }}
-                  >📋 ShadowJira</button>
-                )}
-                {activeWindow === 'email' && (
-                  <button
-                    className={`nxos-taskbar-app-btn ${!minimizedWindows.includes('email') ? 'active' : ''}`}
-                    onClick={() => { toggleMinimize('email'); openApp('email') }}
-                  >📧 Outlook {unreadEmails > 0 && `(${unreadEmails})`}</button>
-                )}
-              </div>
-
-              {/* System tray */}
+              <button className={`nxos-start-btn ${startMenuOpen?'pressed':''}`} onClick={e=>{e.stopPropagation();setStartMenuOpen(!startMenuOpen);playBlip()}}><span className="nxos-start-flag">⊞</span> Start</button>
+              <div className="nxos-taskbar-divider"/>
+              <div className="nxos-taskbar-apps">{openWindows.map(id=>{const r=APP_REGISTRY[id];if(!r)return null;return <button key={id} className={`nxos-taskbar-app-btn ${activeWindow===id&&!minimizedWindows.includes(id)?'active':''}`} onClick={()=>{if(activeWindow===id&&!minimizedWindows.includes(id))toggleMinimize(id);else openApp(id)}}>{r.icon} {id==='email'&&unreadEmails>0?`Mail(${unreadEmails})`:r.title.split('—')[0].trim().split(' ').slice(0,2).join(' ')}</button>})}</div>
               <div className="nxos-systray">
-                <span className="nxos-systray-item" title={`Burnout: ${Math.round(burnout * 100)}%`}>
-                  {burnout > 0.7 ? '🔴' : burnout > 0.4 ? '🟡' : '🟢'}
-                </span>
+                <span className="nxos-systray-item" title={`Mode: ${gameMode}`}>{MODE_LABELS[gameMode]||'🎯'}</span>
+                <span className="nxos-systray-item" title={`Burnout: ${Math.round(burnout*100)}%`}>{burnout>0.7?'🔴':burnout>0.4?'🟡':'🟢'}</span>
                 <span className="nxos-systray-item">⚡{score}</span>
                 <span className="nxos-systray-item">✓{completedCount}</span>
+                <button className="nxos-systray-bell" onClick={e=>{e.stopPropagation();setNotifCenterOpen(!notifCenterOpen);playBlip()}}>🔔{notifCount>0&&<span className="nxos-bell-badge">{notifCount>99?'99+':notifCount}</span>}</button>
                 <span className="nxos-systray-clock">{formatClock(globalClock)}</span>
               </div>
             </div>
-
-            {/* ═══ Start Menu ═══ */}
-            {startMenuOpen && <StartMenu onClose={() => setStartMenuOpen(false)} onOpenApp={openApp} />}
-
-            {/* OS Popup Balloons from system tray */}
-            <OsPopupBalloons />
-
-            {/* Notifications */}
-            <NotificationToast />
-
-            {/* Puzzle Modal */}
-            {activePuzzle && <PuzzleModal />}
-
-            {/* Game Over BSOD */}
-            {gameOver && <GameOverOverlay />}
+            {startMenuOpen&&<StartMenu onClose={()=>setStartMenuOpen(false)} onOpenApp={openApp}/>}
+            {notifCenterOpen&&<NotificationCenter onOpenApp={openApp} onClose={()=>setNotifCenterOpen(false)}/>}
+            <OsPopupBalloons/><NotificationToast/><SlackPopup/><EventDialog/>
+            {activePuzzle&&<PuzzleModal/>}
+            {activeMeeting&&<MeetingWindow/>}
+            {gameOver&&<GameOverOverlay/>}
           </div>
         )}
       </div>
-
-      {/* Monitor base stand */}
-      <div className="nxos-monitor-stand" />
-      <div className="nxos-monitor-base" />
-
-      {/* Power LED */}
-      <div className="nxos-power-led" />
+      <div className="nxos-monitor-stand"/><div className="nxos-monitor-base"/><div className="nxos-power-led"/>
     </div>
   )
 }
