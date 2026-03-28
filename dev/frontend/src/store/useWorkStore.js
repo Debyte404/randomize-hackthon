@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { generatePuzzle, OFFLINE_TASKS, MEETING_TEMPLATES, MEETING_DIALOGUES, SLACK_MESSAGES, REALISM_EVENTS } from './puzzleEngine'
 
 // ─── Gemini API (task generation) ────────────────────────────────
-const GEMINI_API_KEY = 'AIzaSyBpk-HvzF2pP6SJ-KqsOSFqf1SeP1oK5bM'
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || ''
 
 const fetchGeminiTask = async () => {
   try {
@@ -143,14 +143,6 @@ const getChaosMultiplier = (clock, gameMode) => {
   return base * (modeMultipliers[gameMode] || 1.0)
 }
 
-// ─── Game Mode spawn rates ───────────────────────────────────────
-const MODE_CONFIGS = {
-  balanced:      { taskBase: 20, emailBase: 30, meetingBase: 60, slackBase: 40, eventBase: 90 },
-  deadline_rush: { taskBase: 12, emailBase: 25, meetingBase: 80, slackBase: 50, eventBase: 60 },
-  meeting_hell:  { taskBase: 25, emailBase: 35, meetingBase: 20, slackBase: 30, eventBase: 70 },
-  nightmare:     { taskBase: 10, emailBase: 15, meetingBase: 25, slackBase: 20, eventBase: 45 },
-}
-
 export const useWorkStore = create((set, get) => ({
   // Core metrics
   score: 0,
@@ -189,62 +181,101 @@ export const useWorkStore = create((set, get) => ({
   bootComplete: false,
   gameOver: false,
 
+  // Combo system
+  combo: 0,
+  comboMultiplier: 1,
+  lastCompletionTime: 0,
+
+  // XP & Level
+  xp: 0,
+  level: 1,
+
+  // Boss alert
+  bossAlert: null, // { deadline, startTime }
+
+  // Achievements
+  achievements: [],
+  achievementPopup: null,
+
   // --- Actions ---
   setGameMode: (mode) => set({ gameMode: mode }),
+
+  _lastHeavyTick: 0, // throttle expensive checks to ~1/sec
 
   tick: (delta) => {
     const state = get()
     if (state.gameOver) return
 
     const newClock = state.globalClock + delta
-    const chaos = getChaosMultiplier(newClock, state.gameMode)
+    const now = Date.now()
 
     let dayPhase = 'MORNING'
     if (newClock > 120) dayPhase = 'AFTERNOON'
     if (newClock > 300) dayPhase = 'CRUNCH_TIME'
     if (newClock > 360) dayPhase = 'OVERTIME'
 
-    let burnoutDelta = delta * 0.0008 * chaos
+    let burnoutDelta = delta * 0.0008 * getChaosMultiplier(newClock, state.gameMode)
 
-    const now = Date.now()
-    let expiredEmails = 0
-    const updatedEmails = state.emails.map(e => {
-      if (!e.read && (now - e.createdAt) / 1000 > e.expiresIn) {
-        expiredEmails++
-        return { ...e, read: true }
-      }
-      return e
-    })
-    burnoutDelta += expiredEmails * 0.04 * chaos
-
-    const updatedTasks = state.tasks.map(t => {
-      if (t.status === 'backlog') {
-        const elapsed = (now - t.createdAt) / 1000
-        if (elapsed > t.deadline) return { ...t, status: 'done', expired: true }
-      }
-      return t
-    })
-    const newExpired = updatedTasks.filter(t => t.expired && !state.tasks.find(st => st.id === t.id && st.expired)).length
-    burnoutDelta += newExpired * 0.03 * chaos
-
-    // Missed meetings
-    const updatedMeetings = state.meetings.map(m => {
-      if (!m.dismissed && (now - m.createdAt) / 1000 > m.startsIn + 15) {
-        burnoutDelta += 0.06
-        return { ...m, dismissed: true }
-      }
-      return m
-    })
-
-    // Active meeting timer
+    // Active meeting timer (runs every frame — lightweight)
     let activeMeeting = state.activeMeeting
     if (activeMeeting) {
-      activeMeeting = { ...activeMeeting, timer: activeMeeting.timer - delta }
+      activeMeeting = { ...activeMeeting, timer: activeMeeting.timer - delta * (activeMeeting.speedMultiplier || 1) }
       if (activeMeeting.timer <= 0) {
-        // Meeting ended — outcome based on last choice or timeout
         burnoutDelta += 0.05
         activeMeeting = null
       }
+    }
+
+    // Heavy checks: email/task/meeting expiry — throttle to ~1/sec
+    const doHeavy = (now - state._lastHeavyTick) > 1000
+    let updatedEmails = state.emails
+    let updatedTasks = state.tasks
+    let updatedMeetings = state.meetings
+    let activePopups = state.osPopups
+    let activeSlack = state.slackMessages
+
+    if (doHeavy) {
+      const chaos = getChaosMultiplier(newClock, state.gameMode)
+
+      // Expire emails
+      let expiredEmails = 0
+      updatedEmails = state.emails.filter(e => {
+        if (e.read && (now - e.createdAt) / 1000 > 60) return false // prune old read emails
+        return true
+      }).map(e => {
+        if (!e.read && (now - e.createdAt) / 1000 > e.expiresIn) { expiredEmails++; return { ...e, read: true } }
+        return e
+      })
+      burnoutDelta += expiredEmails * 0.04 * chaos
+
+      // Expire tasks
+      updatedTasks = state.tasks.map(t => {
+        if (t.status === 'backlog') {
+          if ((now - t.createdAt) / 1000 > t.deadline) return { ...t, status: 'done', expired: true }
+        }
+        return t
+      })
+      // Prune old done tasks (keep last 20)
+      const doneTasks = updatedTasks.filter(t => t.status === 'done')
+      if (doneTasks.length > 20) {
+        const keepIds = new Set(doneTasks.slice(-20).map(t => t.id))
+        updatedTasks = updatedTasks.filter(t => t.status !== 'done' || keepIds.has(t.id))
+      }
+      const newExpired = updatedTasks.filter(t => t.expired && !state.tasks.find(st => st.id === t.id && st.expired)).length
+      burnoutDelta += newExpired * 0.03 * chaos
+
+      // Expire meetings
+      updatedMeetings = state.meetings.filter(m => {
+        if (m.dismissed && (now - m.createdAt) / 1000 > 60) return false // prune old
+        return true
+      }).map(m => {
+        if (!m.dismissed && (now - m.createdAt) / 1000 > m.startsIn + 15) { burnoutDelta += 0.06; return { ...m, dismissed: true } }
+        return m
+      })
+
+      // Prune popups and slack
+      activePopups = state.osPopups.filter(p => (now - p.createdAt) < 10000)
+      activeSlack = state.slackMessages.filter(s => (now - s.createdAt) < 45000)
     }
 
     const newBurnout = Math.min(1.0, state.burnout + burnoutDelta)
@@ -253,15 +284,20 @@ export const useWorkStore = create((set, get) => ({
       return
     }
 
-    const activePopups = state.osPopups.filter(p => (now - p.createdAt) < 10000)
-    // Auto-dismiss slack messages after 20s
-    const activeSlack = state.slackMessages.filter(s => (now - s.createdAt) < 20000)
-
-    set({
-      globalClock: newClock, dayPhase, burnout: newBurnout,
-      emails: updatedEmails, tasks: updatedTasks, meetings: updatedMeetings,
-      activeMeeting, osPopups: activePopups, slackMessages: activeSlack,
-    })
+    const updates = { globalClock: newClock, dayPhase, burnout: newBurnout, activeMeeting }
+    if (doHeavy) {
+      updates.emails = updatedEmails
+      updates.tasks = updatedTasks
+      updates.meetings = updatedMeetings
+      updates.osPopups = activePopups
+      updates.slackMessages = activeSlack
+      updates._lastHeavyTick = now
+      // Cap notification history at 50
+      if (state.notificationHistory.length > 50) {
+        updates.notificationHistory = state.notificationHistory.slice(-50)
+      }
+    }
+    set(updates)
   },
 
   spawnTask: async () => {
@@ -341,15 +377,57 @@ export const useWorkStore = create((set, get) => ({
     if (correct) {
       const task = state.tasks.find(t => t.id === taskId)
       if (task) {
-        const totalPoints = task.points + puzzle.points
-        const doneNow = Date.now()
+        const now = Date.now()
+        const timeSinceLast = (now - state.lastCompletionTime) / 1000
+        const isCombo = timeSinceLast < 30 && state.lastCompletionTime > 0
+        const newCombo = isCombo ? state.combo + 1 : 1
+        const newMultiplier = Math.min(5, 1 + (newCombo - 1) * 0.5) // 1x, 1.5x, 2x, 2.5x... up to 5x
+        const basePoints = task.points + puzzle.points
+        const totalPoints = Math.round(basePoints * newMultiplier)
+
+        const newXp = state.xp + totalPoints
+        const xpForNextLevel = state.level * 50
+        const newLevel = newXp >= xpForNextLevel ? state.level + 1 : state.level
+        const adjustedXp = newXp >= xpForNextLevel ? newXp - xpForNextLevel : newXp
+
+        // Check achievements
+        const newCount = state.completedCount + 1
+        const newAchievements = [...state.achievements]
+        let achievementPopup = null
+        const ACHIEVEMENT_DEFS = [
+          { id: 'first_task', check: () => newCount >= 1, title: '🎯 First Blood', desc: 'Completed your first task' },
+          { id: 'combo_3', check: () => newCombo >= 3, title: '🔥 On Fire!', desc: '3x combo streak' },
+          { id: 'combo_5', check: () => newCombo >= 5, title: '⚡ Unstoppable!', desc: '5x combo streak' },
+          { id: 'tasks_5', check: () => newCount >= 5, title: '📋 Ticket Machine', desc: 'Completed 5 tasks' },
+          { id: 'tasks_10', check: () => newCount >= 10, title: '🏆 Sprint Champion', desc: 'Completed 10 tasks' },
+          { id: 'tasks_25', check: () => newCount >= 25, title: '💎 Code Warrior', desc: 'Completed 25 tasks' },
+          { id: 'score_100', check: () => (state.score + totalPoints) >= 100, title: '💯 Century Club', desc: 'Scored 100+ points' },
+          { id: 'score_500', check: () => (state.score + totalPoints) >= 500, title: '🌟 Point Hoarder', desc: 'Scored 500+ points' },
+          { id: 'level_3', check: () => newLevel >= 3, title: '📈 Rising Star', desc: 'Reached level 3' },
+          { id: 'level_5', check: () => newLevel >= 5, title: '🚀 Senior Intern', desc: 'Reached level 5' },
+        ]
+        for (const ach of ACHIEVEMENT_DEFS) {
+          if (!newAchievements.includes(ach.id) && ach.check()) {
+            newAchievements.push(ach.id)
+            achievementPopup = { title: ach.title, desc: ach.desc, time: now }
+          }
+        }
+
+        const comboText = newMultiplier > 1 ? ` (${newMultiplier}x COMBO!)` : ''
         set(s => ({
           tasks: s.tasks.map(t => t.id === taskId ? { ...t, status: 'done' } : t),
           score: s.score + totalPoints,
-          completedCount: s.completedCount + 1,
+          completedCount: newCount,
           burnout: Math.max(0, s.burnout - 0.04),
-          notifications: [...s.notifications, { id: doneNow, text: `+${totalPoints} pts — ${taskId} done!`, type: 'success' }],
-          notificationHistory: [...s.notificationHistory, { id: doneNow, icon: '✅', text: `+${totalPoints} pts — ${taskId} completed!`, type: 'success', app: 'jira', createdAt: doneNow }],
+          combo: newCombo,
+          comboMultiplier: newMultiplier,
+          lastCompletionTime: now,
+          xp: adjustedXp,
+          level: newLevel,
+          achievements: newAchievements,
+          achievementPopup,
+          notifications: [...s.notifications, { id: now, text: `+${totalPoints} pts${comboText} — ${taskId} done!`, type: 'success' }],
+          notificationHistory: [...s.notificationHistory, { id: now, icon: '✅', text: `+${totalPoints} pts${comboText} — ${taskId} completed!`, type: 'success', app: 'jira', createdAt: now }],
           activePuzzle: null, puzzleInput: '', puzzleState: {},
         }))
       }
@@ -510,6 +588,9 @@ export const useWorkStore = create((set, get) => ({
       } else if (event.effect === 'burnout_relief') {
         updates.burnout = Math.max(0, s.burnout - 0.08)
         updates.score = s.score + 10
+      } else if (event.effect === 'boss_alert') {
+        updates.bossAlert = { deadline: 5, startTime: Date.now() }
+        updates.activeEvent = null // dismiss the event dialog, boss alert takes over
       }
 
       return updates
@@ -517,6 +598,34 @@ export const useWorkStore = create((set, get) => ({
   },
 
   dismissEvent: () => set({ activeEvent: null }),
+
+  triggerBossAlert: () => {
+    set(s => ({
+      bossAlert: { deadline: 5, startTime: Date.now() },
+      notifications: [...s.notifications, { id: Date.now(), text: '🚨 BOSS IS COMING! Close non-work apps!', type: 'error' }],
+    }))
+  },
+
+  resolveBossAlert: (survived) => {
+    const now = Date.now()
+    if (survived) {
+      set(s => ({
+        bossAlert: null,
+        score: s.score + 15,
+        burnout: Math.max(0, s.burnout - 0.03),
+        notifications: [...s.notifications, { id: now, text: '✅ Boss walked by! +15 pts', type: 'success' }],
+      }))
+    } else {
+      set(s => ({
+        bossAlert: null,
+        score: Math.max(0, s.score - 20),
+        burnout: Math.min(1, s.burnout + 0.08),
+        notifications: [...s.notifications, { id: now, text: '😱 Boss caught you slacking! -20 pts', type: 'error' }],
+      }))
+    }
+  },
+
+  dismissAchievement: () => set({ achievementPopup: null }),
 
   takeCoffeeBreak: () => {
     set(s => ({
@@ -561,7 +670,11 @@ export const useWorkStore = create((set, get) => ({
       activeMeeting: null, activePuzzle: null, puzzleInput: '', puzzleState: {},
       slackMessages: [], activeEvent: null,
       activeWindow: null, notifications: [], notificationHistory: [], osPopups: [],
-      bootComplete: false, gameOver: false,
+      bootComplete: false, gameOver: false, _lastHeavyTick: 0,
+      combo: 0, comboMultiplier: 1, lastCompletionTime: 0,
+      xp: 0, level: 1,
+      bossAlert: null,
+      achievements: [], achievementPopup: null,
     })
   },
 }))
