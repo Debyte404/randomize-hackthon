@@ -275,7 +275,7 @@ export const useWorkStore = create((set, get) => ({
 
       // Prune popups and slack
       activePopups = state.osPopups.filter(p => (now - p.createdAt) < 10000)
-      activeSlack = state.slackMessages.filter(s => (now - s.createdAt) < 20000)
+      activeSlack = state.slackMessages.filter(s => (now - s.createdAt) < 45000)
     }
 
     const newBurnout = Math.min(1.0, state.burnout + burnoutDelta)

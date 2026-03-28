@@ -619,25 +619,82 @@ const MeetingWindow = () => {
 // ═══════════════════════════════════════════════════════════════════
 // SLACK POPUP
 // ═══════════════════════════════════════════════════════════════════
+const QUICK_REPLIES = [
+  'Got it, thanks!', 'On it 👍', 'Will do!', 'Looking into it now.',
+  'Sure, let me check.', 'Noted!', 'ACK', 'lgtm', '👀', 'brb',
+  'Can you file a ticket?', 'Per my last message...',
+]
+
 const SlackPopup = () => {
   const messages = useWorkStore(s => s.slackMessages)
   const respondSlack = useWorkStore(s => s.respondSlack)
   const ignoreSlack = useWorkStore(s => s.ignoreSlack)
+  const [replyMode, setReplyMode] = useState(false)
+  const [replyText, setReplyText] = useState('')
+  const replyRef = useRef(null)
+
+  useEffect(() => { if (replyMode && replyRef.current) replyRef.current.focus() }, [replyMode])
+
   if (messages.length === 0) return null
   const msg = messages[0]
+
+  const sendReply = () => {
+    if (!replyText.trim() && !replyMode) return
+    respondSlack(msg.id)
+    playSuccess()
+    setReplyMode(false)
+    setReplyText('')
+  }
+
+  const pickQuickReply = (text) => {
+    setReplyText(text)
+    setTimeout(() => {
+      respondSlack(msg.id)
+      playSuccess()
+      setReplyMode(false)
+      setReplyText('')
+    }, 200)
+  }
+
   return (
-    <div className="nxos-slack-popup">
+    <div className="nxos-slack-popup" onClick={e => e.stopPropagation()}>
       <div className="nxos-slack-header">
         <span>💬 Slack — {msg.channel}</span>
-        {msg.urgent && <span className="nxos-urgent-badge">!</span>}
+        <div style={{display:'flex',gap:'4px',alignItems:'center'}}>
+          {msg.urgent && <span className="nxos-urgent-badge">!</span>}
+          <button className="nxos-slack-close" onClick={() => { ignoreSlack(msg.id); playBlip() }}>✕</button>
+        </div>
       </div>
       <div className="nxos-slack-body">
         <strong>{msg.from}:</strong> {msg.text}
       </div>
-      <div className="nxos-slack-actions">
-        <button className="nxos-btn" onClick={()=>{respondSlack(msg.id);playBlip()}}>Reply</button>
-        <button className="nxos-btn" onClick={()=>{ignoreSlack(msg.id);playBlip()}}>Ignore</button>
-      </div>
+      {!replyMode ? (
+        <div className="nxos-slack-actions">
+          <button className="nxos-btn" onClick={() => { setReplyMode(true); playBlip() }}>Reply</button>
+          <button className="nxos-btn" onClick={() => { ignoreSlack(msg.id); playBlip() }}>Ignore</button>
+        </div>
+      ) : (
+        <div className="nxos-slack-reply-area">
+          <div className="nxos-slack-quick-replies">
+            {QUICK_REPLIES.slice(0, 6).map(r => (
+              <button key={r} className="nxos-slack-quick-btn" onClick={() => pickQuickReply(r)}>{r}</button>
+            ))}
+          </div>
+          <div className="nxos-slack-reply-row">
+            <input
+              ref={replyRef}
+              className="nxos-slack-reply-input"
+              value={replyText}
+              onChange={e => setReplyText(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && replyText.trim()) sendReply() }}
+              placeholder="Type a reply..."
+              autoComplete="off"
+              spellCheck={false}
+            />
+            <button className="nxos-btn" disabled={!replyText.trim()} onClick={sendReply}>Send</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

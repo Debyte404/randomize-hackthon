@@ -1617,7 +1617,7 @@
    ═══════════════════════════════════════════════════════════════════ */
 .nxos-slack-popup {
   position: absolute; bottom: 38px; left: 10px;
-  width: 220px; background: #f8f4ff;
+  width: 240px; background: #f8f4ff;
   border: 2px solid; border-color: #fff #808080 #808080 #fff;
   box-shadow: 2px 2px 0 rgba(0,0,0,0.2); z-index: 210;
   animation: nxos-slack-slide 0.2s ease-out;
@@ -1628,8 +1628,32 @@
   padding: 3px 6px; background: #4A154B; color: #fff;
   font-size: 0.5rem; font-weight: bold;
 }
+.nxos-slack-close {
+  background: none; border: none; color: #fff; cursor: pointer;
+  font-size: 0.5rem; padding: 0 2px; opacity: 0.7;
+}
+.nxos-slack-close:hover { opacity: 1; }
 .nxos-slack-body { padding: 6px; font-size: 0.5rem; color: #000; line-height: 1.4; }
 .nxos-slack-actions { display: flex; gap: 4px; padding: 4px 6px; justify-content: flex-end; }
+.nxos-slack-reply-area { padding: 4px 6px 6px; border-top: 1px solid #ddd; }
+.nxos-slack-quick-replies {
+  display: flex; flex-wrap: wrap; gap: 2px; margin-bottom: 4px;
+}
+.nxos-slack-quick-btn {
+  font-size: 0.4rem; padding: 1px 4px; cursor: pointer;
+  background: #e8e0f0; border: 1px solid #c0b0d0; border-radius: 3px;
+  color: #4A154B; white-space: nowrap;
+}
+.nxos-slack-quick-btn:hover { background: #4A154B; color: #fff; }
+.nxos-slack-reply-row {
+  display: flex; gap: 3px; align-items: center;
+}
+.nxos-slack-reply-input {
+  flex: 1; height: 18px; font-size: 0.5rem;
+  padding: 1px 4px; border: 1px inset #808080;
+  font-family: inherit; outline: none;
+}
+.nxos-slack-reply-input:focus { border-color: #4A154B; }
 .nxos-urgent-badge {
   background: #ff0000; color: #fff; font-size: 0.4rem; font-weight: bold;
   width: 12px; height: 12px; border-radius: 50%;
