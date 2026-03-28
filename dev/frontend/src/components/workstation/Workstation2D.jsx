@@ -1,12 +1,18 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useWorkStore } from '../../store/useWorkStore'
 import { useGameStore } from '../../store/useGameStore'
 import './Workstation2D.css'
 
-// ─── Sound helpers ───────────────────────────────────────────────
-const playBlip = (vol = 0.3) => { try { const v = useGameStore.getState().settings.volume; if (v <= 0) return; const c = new AudioContext(); const o = c.createOscillator(); const g = c.createGain(); o.connect(g); g.connect(c.destination); o.type = 'square'; o.frequency.setValueAtTime(800, c.currentTime); o.frequency.exponentialRampToValueAtTime(400, c.currentTime + 0.08); g.gain.setValueAtTime(vol * v, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.08); o.start(); o.stop(c.currentTime + 0.1) } catch(e){} }
-const playError = () => { try { const v = useGameStore.getState().settings.volume; if (v <= 0) return; const c = new AudioContext(); const o = c.createOscillator(); const g = c.createGain(); o.connect(g); g.connect(c.destination); o.type = 'sawtooth'; o.frequency.setValueAtTime(200, c.currentTime); o.frequency.exponentialRampToValueAtTime(80, c.currentTime + 0.3); g.gain.setValueAtTime(0.4 * v, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.3); o.start(); o.stop(c.currentTime + 0.35) } catch(e){} }
-const playSuccess = () => { try { const v = useGameStore.getState().settings.volume; if (v <= 0) return; const c = new AudioContext(); const o = c.createOscillator(); const g = c.createGain(); o.connect(g); g.connect(c.destination); o.type = 'sine'; o.frequency.setValueAtTime(523, c.currentTime); o.frequency.setValueAtTime(659, c.currentTime + 0.1); o.frequency.setValueAtTime(784, c.currentTime + 0.2); g.gain.setValueAtTime(0.3 * v, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.35); o.start(); o.stop(c.currentTime + 0.4) } catch(e){} }
+// ─── Sound helpers (shared AudioContext to avoid browser limit) ──
+let _audioCtx = null
+const getAudioCtx = () => {
+  if (!_audioCtx || _audioCtx.state === 'closed') _audioCtx = new AudioContext()
+  if (_audioCtx.state === 'suspended') _audioCtx.resume().catch(() => {})
+  return _audioCtx
+}
+const playBlip = (vol = 0.3) => { try { const v = useGameStore.getState().settings.volume; if (v <= 0) return; const c = getAudioCtx(); const o = c.createOscillator(); const g = c.createGain(); o.connect(g); g.connect(c.destination); o.type = 'square'; o.frequency.setValueAtTime(800, c.currentTime); o.frequency.exponentialRampToValueAtTime(400, c.currentTime + 0.08); g.gain.setValueAtTime(vol * v, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.08); o.start(); o.stop(c.currentTime + 0.1) } catch(e){} }
+const playError = () => { try { const v = useGameStore.getState().settings.volume; if (v <= 0) return; const c = getAudioCtx(); const o = c.createOscillator(); const g = c.createGain(); o.connect(g); g.connect(c.destination); o.type = 'sawtooth'; o.frequency.setValueAtTime(200, c.currentTime); o.frequency.exponentialRampToValueAtTime(80, c.currentTime + 0.3); g.gain.setValueAtTime(0.4 * v, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.3); o.start(); o.stop(c.currentTime + 0.35) } catch(e){} }
+const playSuccess = () => { try { const v = useGameStore.getState().settings.volume; if (v <= 0) return; const c = getAudioCtx(); const o = c.createOscillator(); const g = c.createGain(); o.connect(g); g.connect(c.destination); o.type = 'sine'; o.frequency.setValueAtTime(523, c.currentTime); o.frequency.setValueAtTime(659, c.currentTime + 0.1); o.frequency.setValueAtTime(784, c.currentTime + 0.2); g.gain.setValueAtTime(0.3 * v, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.35); o.start(); o.stop(c.currentTime + 0.4) } catch(e){} }
 
 const GLITCH = '█▓░▒╬╦╩╗╔╣║▐▀▄'
 const garble = (text, b) => { if (b < 0.3) return text; return text.split('').map(c => c === ' ' ? c : Math.random() < (b-0.3)*0.8 ? GLITCH[Math.floor(Math.random()*GLITCH.length)] : c).join('') }
@@ -37,7 +43,7 @@ const StartMenu = ({ onClose, onOpenApp }) => {
     <div className="nxos-start-menu" onClick={e => e.stopPropagation()}>
       <div className="nxos-start-sidebar"><span className="nxos-start-sidebar-text">NexusOS 98</span></div>
       <div className="nxos-start-items">
-        {[['jira','📋','ShadowJira™'],['email','📧','QuickOutlook™'],['browser','🌐','NexusNet Explorer'],['notepad','📝','Notepad.exe']].map(([id,ic,nm])=>(
+        {[['jira','📋','ShadowJira™'],['email','📧','QuickOutlook™'],['browser','🌐','NexusNet Explorer'],['notepad','📝','Notepad.exe'],['terminal','⬛','Command Prompt']].map(([id,ic,nm])=>(
           <div key={id} className="nxos-start-item" onClick={()=>{onOpenApp(id);onClose()}}><span className="nxos-start-item-icon">{ic}</span> {nm}</div>
         ))}
         <div className="nxos-start-divider"/>
@@ -475,11 +481,199 @@ const MyComputerContent = () => <div className="nxos-mycomputer"><div className=
 const MyDocumentsContent = () => { const [sel,setSel]=useState(null); const files=[{name:'new_hire_checklist.doc',icon:'📄',content:'Step 1: Find desk\nStep 2: Login\nStep 3: Look busy'},{name:'totally_not_resume.doc',icon:'📄',content:'Dear [Better Company]...\n[CORRUPTED]'},{name:'meeting_notes_FINAL_v2.doc',icon:'📄',content:'Notes:\n- TBD\n- Follow up: Next meeting\n- Duration: 2h (could be email)'},{name:'cat_pictures',icon:'📁',content:'🐱 cat1.jpg\n🐱 cat2.jpg\n🐱 spreadsheet.jpg.exe ⚠️'}]; return <div className="nxos-documents"><div className="nxos-doc-list">{files.map(f=><div key={f.name} className={`nxos-doc-item ${sel===f.name?'selected':''}`} onClick={()=>setSel(f.name)}><span className="nxos-doc-icon">{f.icon}</span><span className="nxos-doc-name">{f.name}</span></div>)}</div>{sel&&<div className="nxos-doc-preview"><pre>{files.find(f=>f.name===sel)?.content}</pre></div>}</div> }
 const RecycleBinContent = () => <div className="nxos-recycle"><div className="nxos-recycle-empty"><span style={{fontSize:'2rem'}}>🗑️</span><p>Empty.</p><p style={{color:'#808080',fontSize:'0.5rem'}}>Like your work-life balance.</p></div></div>
 
+const TerminalContent = () => {
+  const [history, setHistory] = useState([
+    { type: 'system', text: 'NexusCorp Terminal v3.1' },
+    { type: 'system', text: 'Type "help" for available commands.' },
+    { type: 'system', text: '─────────────────────────────────' },
+  ])
+  const [input, setInput] = useState('')
+  const scrollRef = useRef(null)
+  const inputRef = useRef(null)
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+  }, [history])
+  useEffect(() => { if (inputRef.current) inputRef.current.focus() }, [])
+
+  const COMMANDS = {
+    help: () => ['Commands: help, status, whoami, uptime, hack, coffee, sudo, clear, neofetch, fortune, ls, ping'],
+    status: () => {
+      const s = useWorkStore.getState()
+      return [`Score: ${s.score} | Tasks: ${s.completedCount} | Burnout: ${Math.round(s.burnout*100)}%`, `Level: ${s.level} | Combo: ${s.combo}x | Mode: ${s.gameMode}`]
+    },
+    whoami: () => ['INTERN_9921 (permissions: none)'],
+    uptime: () => {
+      const gc = useWorkStore.getState().globalClock
+      return [`System uptime: ${Math.floor(gc/60)}m ${Math.floor(gc%60)}s`, `Emotional uptime: declining`]
+    },
+    hack: () => {
+      useWorkStore.setState(s => ({ score: s.score + 5, notifications: [...s.notifications, { id: Date.now(), text: '🎮 +5 pts (hacker bonus)', type: 'success' }] }))
+      return ['[ACCESS GRANTED]', '██████████████████ 100%', 'Mainframe compromised. +5 bonus points.', '...just kidding. But the points are real.']
+    },
+    coffee: () => {
+      useWorkStore.setState(s => ({ burnout: Math.max(0, s.burnout - 0.03) }))
+      return ['☕ Brewing virtual coffee...', '████████████████ done.', 'Burnout reduced slightly. Caffeine is not a personality.']
+    },
+    sudo: () => ['Nice try. You don\'t have sudo access.', 'Your request has been logged and will be ignored.'],
+    clear: () => { setHistory([]); return [] },
+    neofetch: () => [
+      '   ███╗  NexusOS 98 SE',
+      '  ██╔██╗ Kernel: BURNOUT.SYS v4.2',
+      ' ██╔╝██║ CPU: Pentium II 400MHz',
+      '███████║ RAM: 128MB (96MB used by Outlook)',
+      '╚══════╝ Disk: 42% (cat pictures)',
+      '         Shell: cmd.exe (no bash sorry)',
+      '         Theme: Corporate Despair',
+    ],
+    fortune: () => {
+      const fortunes = [
+        '"Every commit brings you closer to burnout." — Git Wisdom',
+        '"There are only 2 hard problems: naming things, cache invalidation, and off-by-one errors."',
+        '"It works on my machine." — Last words before incident report',
+        '"Meetings are where minutes are kept and hours are lost."',
+        '"Deadline: The point at which scope creep becomes scope sprint."',
+        '"Your code has no bugs. Only undocumented features."',
+        '"rm -rf /problems    (permission denied)"',
+      ]
+      return [fortunes[Math.floor(Math.random() * fortunes.length)]]
+    },
+    ls: () => ['budget_2024_FINAL_v3_REAL_FINAL.xlsx', 'todo.txt (4.2 GB)', 'definitely_not_resume.docx', 'node_modules/ (∞ GB)', '.env.production.bak.old.DONOTUSE'],
+    ping: () => {
+      const targets = ['prod-server-1', 'jira.nexuscorp.local', 'motivation.exe']
+      const t = targets[Math.floor(Math.random() * targets.length)]
+      return [`PING ${t}...`, `Reply: 404 Not Found`, `${t} is unreachable. Like your career goals.`]
+    },
+  }
+
+  const handleCommand = (e) => {
+    if (e.key !== 'Enter' || !input.trim()) return
+    const cmd = input.trim().toLowerCase()
+    const newHistory = [...history, { type: 'input', text: `C:\\NEXUS> ${input}` }]
+    const handler = COMMANDS[cmd]
+    if (handler) {
+      const output = handler()
+      output.forEach(line => newHistory.push({ type: 'output', text: line }))
+    } else {
+      newHistory.push({ type: 'error', text: `'${cmd}' is not recognized as an internal or external command.` })
+      newHistory.push({ type: 'error', text: 'Type "help" for a list of commands.' })
+    }
+    setHistory(newHistory.slice(-80))
+    setInput('')
+  }
+
+  return (
+    <div className="nxos-terminal" onClick={() => inputRef.current?.focus()}>
+      <div className="nxos-terminal-output" ref={scrollRef}>
+        {history.map((line, i) => (
+          <div key={i} className={`nxos-term-line ${line.type}`}>{line.text}</div>
+        ))}
+      </div>
+      <div className="nxos-terminal-input-row">
+        <span className="nxos-term-prompt">C:\NEXUS&gt;</span>
+        <input ref={inputRef} className="nxos-terminal-input" value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleCommand} autoComplete="off" spellCheck={false} />
+      </div>
+    </div>
+  )
+}
+
+const AchievementPopup = () => {
+  const popup = useWorkStore(s => s.achievementPopup)
+  const dismiss = useWorkStore(s => s.dismissAchievement)
+  useEffect(() => {
+    if (popup) {
+      playSuccess()
+      const t = setTimeout(dismiss, 4000)
+      return () => clearTimeout(t)
+    }
+  }, [popup, dismiss])
+  if (!popup) return null
+  return (
+    <div className="nxos-achievement-popup">
+      <div className="nxos-achievement-inner">
+        <div className="nxos-achievement-title">ACHIEVEMENT UNLOCKED</div>
+        <div className="nxos-achievement-name">{popup.title}</div>
+        <div className="nxos-achievement-desc">{popup.desc}</div>
+      </div>
+    </div>
+  )
+}
+
+const ComboIndicator = () => {
+  const combo = useWorkStore(s => s.combo)
+  const multiplier = useWorkStore(s => s.comboMultiplier)
+  const [visible, setVisible] = useState(false)
+  useEffect(() => {
+    if (combo > 1) { setVisible(true); const t = setTimeout(() => setVisible(false), 2000); return () => clearTimeout(t) }
+  }, [combo])
+  if (!visible || combo <= 1) return null
+  return (
+    <div className="nxos-combo-indicator">
+      <div className="nxos-combo-count">{combo}x</div>
+      <div className="nxos-combo-label">COMBO! ({multiplier}x pts)</div>
+    </div>
+  )
+}
+
+const NON_WORK_APPS = ['browser', 'notepad', 'documents', 'recyclebin', 'terminal', 'mycomputer']
+
+const BossAlertOverlay = ({ openWindows, closeApp }) => {
+  const bossAlert = useWorkStore(s => s.bossAlert)
+  const resolveBossAlert = useWorkStore(s => s.resolveBossAlert)
+  const [timer, setTimer] = useState(5)
+
+  const nonWorkOpen = openWindows.filter(w => NON_WORK_APPS.includes(w))
+  const isClear = nonWorkOpen.length === 0
+
+  useEffect(() => {
+    if (!bossAlert) return
+    setTimer(bossAlert.deadline)
+    const iv = setInterval(() => {
+      const elapsed = (Date.now() - bossAlert.startTime) / 1000
+      const remaining = Math.max(0, bossAlert.deadline - elapsed)
+      setTimer(remaining)
+      if (remaining <= 0) {
+        clearInterval(iv)
+        // Check at deadline: did they close everything?
+        resolveBossAlert(false)
+      }
+    }, 100)
+    return () => clearInterval(iv)
+  }, [bossAlert, resolveBossAlert])
+
+  // Auto-resolve success when player closes all non-work apps
+  useEffect(() => {
+    if (bossAlert && isClear) {
+      resolveBossAlert(true)
+      playSuccess()
+    }
+  }, [bossAlert, isClear, resolveBossAlert])
+
+  if (!bossAlert) return null
+  return (
+    <div className="nxos-boss-overlay">
+      <div className="nxos-boss-inner">
+        <div className="nxos-boss-icon">🚨</div>
+        <div className="nxos-boss-title">BOSS APPROACHING!</div>
+        <div className="nxos-boss-desc">Close non-work apps NOW! Use Escape or click ✕</div>
+        <div className="nxos-boss-timer">{timer.toFixed(1)}s</div>
+        {nonWorkOpen.length > 0 ? (
+          <div style={{fontSize:'0.5rem',color:'#ff8888',marginTop:'4px'}}>
+            ⚠ Still open: {nonWorkOpen.map(w => APP_REGISTRY[w]?.icon || w).join(' ')}
+          </div>
+        ) : (
+          <div style={{fontSize:'0.5rem',color:'#88ff88',marginTop:'4px'}}>✅ All clear!</div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ─── NotificationCenter, OsPopupBalloons, NotificationToast, GameOver, Boot ──
 const NotificationCenter = ({ onOpenApp, onClose }) => { const h=useWorkStore(s=>s.notificationHistory); const cl=useWorkStore(s=>s.clearHistory); const fmt=ts=>{const s=Math.floor((Date.now()-ts)/1000);return s<60?`${s}s ago`:`${Math.floor(s/60)}m ago`}; return <div className="nxos-notif-center" onClick={e=>e.stopPropagation()}><div className="nxos-notif-center-header"><span>🔔 Notifications</span><div className="nxos-notif-center-actions"><button className="nxos-btn" style={{height:'14px',fontSize:'0.45rem',padding:'0 4px'}} onClick={cl}>Clear</button><button className="nxos-btn" style={{height:'14px',fontSize:'0.45rem',padding:'0 4px'}} onClick={onClose}>✕</button></div></div><div className="nxos-notif-center-body">{h.length===0&&<div className="nxos-notif-center-empty">No notifications yet.</div>}{[...h].reverse().slice(0,30).map(n=><div key={n.id} className={`nxos-notif-center-item ${n.type}`} onClick={()=>{if(n.app){onOpenApp(n.app);onClose()}}} style={{cursor:n.app?'pointer':'default'}}><span className="nxos-notif-center-icon">{n.icon}</span><div className="nxos-notif-center-text"><div className="nxos-notif-center-msg">{n.text}</div><div className="nxos-notif-center-time">{fmt(n.createdAt)}</div></div></div>)}</div></div> }
 const OsPopupBalloons = () => { const p=useWorkStore(s=>s.osPopups); const d=useWorkStore(s=>s.dismissOsPopup); if(!p.length) return null; return <div className="nxos-os-balloons">{p.slice(-3).map(pp=><div key={pp.id} className={`nxos-os-balloon ${pp.type}`} onClick={()=>d(pp.id)}><div className="nxos-balloon-header"><span className="nxos-balloon-icon">{pp.icon}</span><span className="nxos-balloon-title">{pp.title}</span><button className="nxos-balloon-close" onClick={e=>{e.stopPropagation();d(pp.id)}}>✕</button></div><div className="nxos-balloon-text">{pp.text}</div></div>)}</div> }
 const NotificationToast = () => { const n=useWorkStore(s=>s.notifications); const c=useWorkStore(s=>s.clearNotification); useEffect(()=>{ if(n.length>0){const t=setTimeout(()=>c(n[0].id),3000);return()=>clearTimeout(t)} },[n,c]); return <div className="nxos-notifications">{n.slice(0,3).map(x=><div key={x.id} className={`nxos-notification ${x.type}`}>{x.text}</div>)}</div> }
-const GameOverOverlay = () => { const s=useWorkStore(x=>x.score); const cc=useWorkStore(x=>x.completedCount); const gc=useWorkStore(x=>x.globalClock); const r=useWorkStore(x=>x.reset); const sg=useGameStore(x=>x.setGameState); const sh=useGameStore(x=>x.setHighScore); const ap=useGameStore(x=>x.addPlaythrough); useEffect(()=>{sh(s);ap({score:s,tasksCompleted:cc,timeElapsed:Math.floor(gc),date:new Date().toISOString()})},[s,cc,gc,sh,ap]);return <div className="nxos-bsod"><div className="nxos-bsod-inner"><h1>NexusOS</h1><p>A fatal exception 0E has occurred in VXD BURNOUT(01)</p><br/><div className="nxos-bsod-stats"><span>SCORE: {s} pts</span><span>TASKS: {cc}</span><span>TIME: {Math.floor(gc/60)}m {Math.floor(gc%60)}s</span></div><br/><div className="nxos-bsod-actions"><button className="nxos-btn" onClick={()=>r()}>RETRY</button><button className="nxos-btn" onClick={()=>{r();sg('START')}}>LOG OFF</button></div></div></div> }
+const GameOverOverlay = () => { const s=useWorkStore(x=>x.score); const cc=useWorkStore(x=>x.completedCount); const gc=useWorkStore(x=>x.globalClock); const r=useWorkStore(x=>x.reset); const sg=useGameStore(x=>x.setGameState); const sh=useGameStore(x=>x.setHighScore); const ap=useGameStore(x=>x.addPlaythrough); useEffect(()=>{sh(s);ap({score:s,tasksCompleted:cc,timeElapsed:Math.floor(gc),date:new Date().toISOString()})},[s,cc,gc,sh,ap]);return <div className="nxos-bsod"><div className="nxos-bsod-inner"><h1>NexusOS</h1><p>A fatal exception 0E has occurred in VXD BURNOUT(01)</p><br/><div className="nxos-bsod-stats"><span>SCORE: {s} pts</span><span>TASKS: {cc}</span><span>LEVEL: {useWorkStore.getState().level}</span><span>BEST COMBO: {useWorkStore.getState().combo}x</span><span>TIME: {Math.floor(gc/60)}m {Math.floor(gc%60)}s</span></div><br/><div className="nxos-bsod-actions"><button className="nxos-btn" onClick={()=>r()}>RETRY</button><button className="nxos-btn" onClick={()=>{r();sg('START')}}>LOG OFF</button></div></div></div> }
 
 const BootSequence = ({ onComplete }) => { const [lines,setLines]=useState([]); const [prog,setProg]=useState(0); const BL=['NexusOS 98 [Version 4.10.1998]','(C) Nexus Corp 1981-1998.','','HIMEM testing extended memory...done.','Loading WIN98.SYS...','NEXUSCORP PROPRIETARY','','C:\\NEXUS> Mounting drives...','C:\\NEXUS> Connecting to INTRANET...','C:\\NEXUS> Authenticating INTERN_9921...','C:\\NEXUS> Loading desktop...']; useEffect(()=>{let i=0;const iv=setInterval(()=>{if(i<BL.length){setLines(p=>[...p,BL[i]]);setProg((i+1)/BL.length);if(BL[i])playBlip(0.05);i++}else{clearInterval(iv);setTimeout(onComplete,600)}},300);return()=>clearInterval(iv)},[]); return <div className="nxos-boot"><div className="nxos-boot-terminal">{lines.map((l,i)=><div key={i} className="nxos-boot-line">{l}</div>)}<span className="nxos-boot-cursor">_</span></div><div className="nxos-boot-bar"><div className="nxos-boot-bar-fill" style={{width:`${prog*100}%`}}/></div></div> }
 
@@ -494,8 +688,9 @@ const APP_REGISTRY = {
   mycomputer:{title:'My Computer',icon:'💻',menu:['File','Edit','View','Help']},
   documents:{title:'My Documents',icon:'📁',menu:['File','Edit','View','Help']},
   recyclebin:{title:'Recycle Bin',icon:'🗑️',menu:['File','Edit','View','Help']},
+  terminal:{title:'Command Prompt',icon:'⬛',menu:['File','Edit','Help']},
 }
-const APP_CONTENT = { jira:()=><ShadowJiraContent/>, email:()=><QuickOutlookContent/>, browser:()=><NexusNetContent/>, notepad:()=><NotepadContent/>, mycomputer:()=><MyComputerContent/>, documents:()=><MyDocumentsContent/>, recyclebin:()=><RecycleBinContent/> }
+const APP_CONTENT = { jira:()=><ShadowJiraContent/>, email:()=><QuickOutlookContent/>, browser:()=><NexusNetContent/>, notepad:()=><NotepadContent/>, mycomputer:()=><MyComputerContent/>, documents:()=><MyDocumentsContent/>, recyclebin:()=><RecycleBinContent/>, terminal:()=><TerminalContent/> }
 
 // ═══════════════════════════════════════════════════════════════════
 // MAIN WORKSTATION COMPONENT
@@ -509,6 +704,8 @@ const Workstation2D = () => {
   const gameOver=useWorkStore(s=>s.gameOver); const activeWindow=useWorkStore(s=>s.activeWindow); const setActiveWindow=useWorkStore(s=>s.setActiveWindow)
   const burnout=useWorkStore(s=>s.burnout); const score=useWorkStore(s=>s.score); const completedCount=useWorkStore(s=>s.completedCount); const globalClock=useWorkStore(s=>s.globalClock)
   const gameMode=useWorkStore(s=>s.gameMode); const setGameMode=useWorkStore(s=>s.setGameMode)
+  const combo=useWorkStore(s=>s.combo); const level=useWorkStore(s=>s.level); const xp=useWorkStore(s=>s.xp)
+  const bossAlert=useWorkStore(s=>s.bossAlert)
   const reset=useWorkStore(s=>s.reset); const meetings=useWorkStore(s=>s.meetings); const startMeeting=useWorkStore(s=>s.startMeeting)
   const unreadEmails=useWorkStore(s=>s.emails.filter(e=>!e.read).length)
   const notifCount=useWorkStore(s=>s.notificationHistory.length)
@@ -518,6 +715,26 @@ const Workstation2D = () => {
   const animFrameRef=useRef(null); const lastTimeRef=useRef(performance.now()); const taskTimerRef=useRef(0); const emailTimerRef=useRef(0); const meetingTimerRef=useRef(0); const slackTimerRef=useRef(0); const eventTimerRef=useRef(0)
 
   useEffect(()=>{reset()},[])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    if (!bootComplete) return
+    const handleKeyboard = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
+      const shortcuts = { '1': 'jira', '2': 'email', '3': 'browser', '4': 'terminal', '5': 'notepad', '6': 'documents', '7': 'mycomputer' }
+      if (e.ctrlKey && shortcuts[e.key]) {
+        e.preventDefault()
+        openApp(shortcuts[e.key])
+        playBlip()
+      }
+      if (e.key === 'Escape' && activeWindow) {
+        closeApp(activeWindow)
+        playBlip()
+      }
+    }
+    window.addEventListener('keydown', handleKeyboard)
+    return () => window.removeEventListener('keydown', handleKeyboard)
+  }, [bootComplete, activeWindow])
 
   // Check for meetings to attend
   const pendingMeetings = meetings.filter(m => !m.dismissed && (Date.now()-m.createdAt)/1000 > m.startsIn - 5 && (Date.now()-m.createdAt)/1000 < m.startsIn + 10)
@@ -552,7 +769,7 @@ const Workstation2D = () => {
       <div className="nxos-crt-bezel">
         <div className="nxos-scanlines"/><div className="nxos-screen-curve"/>
         {!bootComplete ? <BootSequence onComplete={()=>setBootComplete(true)}/> : (
-          <div className="nxos-desktop" style={{filter:burnout>0.5?`hue-rotate(${Math.sin(Date.now()*0.005)*burnout*20}deg)`:undefined}}>
+          <div className={`nxos-desktop ${burnout>0.7?'burnout-critical':burnout>0.5?'burnout-high':''} ${bossAlert?'nxos-screen-shake':''}`} style={{filter:burnout>0.5?`hue-rotate(${Math.sin(Date.now()*0.005)*burnout*20}deg)`:undefined}}>
             <div className="nxos-desktop-icons">
               <DesktopIcon icon="📋" label="ShadowJira" onClick={()=>openApp('jira')}/>
               <DesktopIcon icon="📧" label="QuickOutlook" onClick={()=>openApp('email')}/>
@@ -561,6 +778,7 @@ const Workstation2D = () => {
               <DesktopIcon icon="🗑️" label="Recycle Bin" onClick={()=>openApp('recyclebin')}/>
               <DesktopIcon icon="📝" label="README.txt" onClick={()=>openApp('notepad')}/>
               <DesktopIcon icon="💻" label="My Computer" onClick={()=>openApp('mycomputer')}/>
+              <DesktopIcon icon="⬛" label="Terminal" onClick={()=>openApp('terminal')}/>
             </div>
             {openWindows.map((appId,idx)=>{if(minimizedWindows.includes(appId))return null;const reg=APP_REGISTRY[appId];if(!reg)return null;const C=APP_CONTENT[appId];return <Win98Window key={appId} title={appId==='email'?`${reg.title} (${unreadEmails})`:reg.title} icon={reg.icon} menuItems={reg.menu} isActive={activeWindow===appId} zIndex={activeWindow===appId?20:10+idx} onClose={()=>closeApp(appId)} onMinimize={()=>toggleMinimize(appId)}><C/></Win98Window>})}
             {/* Pending meetings bar */}
@@ -571,6 +789,7 @@ const Workstation2D = () => {
               <div className="nxos-taskbar-divider"/>
               <div className="nxos-taskbar-apps">{openWindows.map(id=>{const r=APP_REGISTRY[id];if(!r)return null;return <button key={id} className={`nxos-taskbar-app-btn ${activeWindow===id&&!minimizedWindows.includes(id)?'active':''}`} onClick={()=>{if(activeWindow===id&&!minimizedWindows.includes(id))toggleMinimize(id);else openApp(id)}}>{r.icon} {id==='email'&&unreadEmails>0?`Mail(${unreadEmails})`:r.title.split('—')[0].trim().split(' ').slice(0,2).join(' ')}</button>})}</div>
               <div className="nxos-systray">
+                <span className="nxos-systray-item nxos-xp-display" title={`XP: ${xp}/${level*50}`}>Lv.{level}</span>
                 <span className="nxos-systray-item" title={`Mode: ${gameMode}`}>{MODE_LABELS[gameMode]||'🎯'}</span>
                 <span className="nxos-systray-item" title={`Burnout: ${Math.round(burnout*100)}%`}>{burnout>0.7?'🔴':burnout>0.4?'🟡':'🟢'}</span>
                 <span className="nxos-systray-item">⚡{score}</span>
@@ -581,9 +800,10 @@ const Workstation2D = () => {
             </div>
             {startMenuOpen&&<StartMenu onClose={()=>setStartMenuOpen(false)} onOpenApp={openApp}/>}
             {notifCenterOpen&&<NotificationCenter onOpenApp={openApp} onClose={()=>setNotifCenterOpen(false)}/>}
-            <OsPopupBalloons/><NotificationToast/><SlackPopup/><EventDialog/>
+            <OsPopupBalloons/><NotificationToast/><SlackPopup/><EventDialog/><AchievementPopup/><ComboIndicator/>
             {activePuzzle&&<PuzzleModal/>}
             {activeMeeting&&<MeetingWindow/>}
+            {bossAlert&&<BossAlertOverlay openWindows={openWindows} closeApp={closeApp}/>}
             {gameOver&&<GameOverOverlay/>}
           </div>
         )}

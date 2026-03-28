@@ -491,4 +491,5 @@ export const REALISM_EVENTS = [
   { type: 'fire_drill', title: '🔥 FIRE DRILL', text: 'Mandatory fire drill in 30 seconds. All work paused.', effect: 'pause_timers' },
   { type: 'internet_lag', title: '🐌 INTERNET ISSUES', text: 'Network latency detected. Everything feels slower...', effect: 'slow_ui' },
   { type: 'praise', title: '🌟 KUDOS!', text: 'Your manager noticed your work! +10 morale boost', effect: 'burnout_relief' },
+  { type: 'boss_alert', title: '🚨 BOSS APPROACHING', text: 'Your manager is walking over! Quick — close anything non-work!', effect: 'boss_alert' },
 ]
