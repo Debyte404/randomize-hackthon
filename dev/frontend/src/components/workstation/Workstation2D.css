@@ -1,0 +1,1056 @@
+/* ═══════════════════════════════════════════════════════════════════
+   NexusOS 98 — Retro Windows Desktop inside CRT Monitor
+   Authentic Win98 look with dull corporate colors
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── Monitor Frame ─────────────────────────────────────────────── */
+.nxos-monitor-frame {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a1a;
+  font-family: 'MS Sans Serif', 'Tahoma', 'Segoe UI', 'Arial', sans-serif;
+  user-select: none;
+}
+
+/* ─── CRT Bezel (the plastic shell around the glass) ────────────── */
+.nxos-crt-bezel {
+  position: relative;
+  width: calc(100% - 80px);
+  height: calc(100% - 100px);
+  max-width: 1280px;
+  max-height: 960px;
+  background: #000;
+  border: 12px solid #c8c0b0;
+  border-top-color: #d8d0c0;
+  border-left-color: #d8d0c0;
+  border-bottom-color: #a8a090;
+  border-right-color: #a8a090;
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 3px #888,
+    0 0 0 6px #666,
+    0 8px 30px rgba(0,0,0,0.8),
+    inset 0 0 60px rgba(0,0,0,0.3);
+  overflow: hidden;
+}
+
+/* Scanlines */
+.nxos-scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    rgba(0, 0, 0, 0.08) 1px,
+    rgba(0, 0, 0, 0.08) 2px
+  );
+  mix-blend-mode: multiply;
+}
+
+/* Screen curvature vignette */
+.nxos-screen-curve {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9997;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.4) 100%);
+}
+
+/* ─── Monitor Stand ─────────────────────────────────────────────── */
+.nxos-monitor-stand {
+  width: 60px;
+  height: 20px;
+  background: linear-gradient(180deg, #b8b0a0, #a8a090);
+  border-radius: 0 0 4px 4px;
+}
+
+.nxos-monitor-base {
+  width: 140px;
+  height: 8px;
+  background: linear-gradient(180deg, #a8a090, #989080);
+  border-radius: 0 0 6px 6px;
+}
+
+.nxos-power-led {
+  position: absolute;
+  bottom: 48px;
+  right: calc(50% - 580px);
+  width: 6px;
+  height: 6px;
+  background: #00cc00;
+  border-radius: 50%;
+  box-shadow: 0 0 4px #00ff00;
+  animation: nxos-led-blink 3s infinite;
+}
+
+@keyframes nxos-led-blink {
+  0%, 90%, 100% { opacity: 1; }
+  95% { opacity: 0.3; }
+}
+
+/* ─── Desktop ───────────────────────────────────────────────────── */
+.nxos-desktop {
+  position: absolute;
+  inset: 0;
+  background: #008080; /* Classic teal Win98 desktop */
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Desktop Icons ─────────────────────────────────────────────── */
+.nxos-desktop-icons {
+  flex: 1;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.nxos-desktop-icon {
+  width: 68px;
+  height: 68px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  padding: 4px;
+  border: 1px solid transparent;
+}
+
+.nxos-desktop-icon:hover {
+  background: rgba(0, 0, 128, 0.15);
+}
+
+.nxos-desktop-icon:focus,
+.nxos-desktop-icon:active {
+  background: rgba(0, 0, 128, 0.3);
+  border: 1px dotted #fff;
+}
+
+.nxos-icon-img {
+  font-size: 1.6rem;
+  line-height: 1;
+  margin-bottom: 2px;
+  filter: drop-shadow(1px 1px 0px rgba(0,0,0,0.8));
+}
+
+.nxos-icon-label {
+  font-size: 0.55rem;
+  color: #fff;
+  text-align: center;
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  word-break: break-word;
+  line-height: 1.2;
+}
+
+/* ─── Win98 Window ──────────────────────────────────────────────── */
+.nxos-window {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  bottom: 50px;
+  display: flex;
+  flex-direction: column;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  box-shadow: 1px 1px 0 #000;
+  z-index: 20;
+}
+
+.nxos-window.active .nxos-window-titlebar {
+  background: linear-gradient(90deg, #000080, #1084d0);
+}
+
+.nxos-window-titlebar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 20px;
+  padding: 0 3px;
+  background: linear-gradient(90deg, #808080, #a0a0a0);
+  flex-shrink: 0;
+}
+
+.nxos-window-titlebar-left {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.nxos-window-icon {
+  font-size: 0.65rem;
+}
+
+.nxos-window-title {
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nxos-window-buttons {
+  display: flex;
+  gap: 2px;
+}
+
+.nxos-win-btn {
+  width: 16px;
+  height: 14px;
+  font-size: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #c0c0c0;
+  border: 1px solid;
+  border-color: #fff #808080 #808080 #fff;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  line-height: 1;
+  color: #000;
+}
+
+.nxos-win-btn:active {
+  border-color: #808080 #fff #fff #808080;
+}
+
+.nxos-win-btn.close:hover {
+  background: #c0c0c0;
+}
+
+/* Menu bar */
+.nxos-window-menubar {
+  display: flex;
+  gap: 0;
+  padding: 1px 4px;
+  background: #c0c0c0;
+  border-bottom: 1px solid #808080;
+  flex-shrink: 0;
+}
+
+.nxos-window-menubar span {
+  font-size: 0.6rem;
+  padding: 1px 6px;
+  color: #000;
+  cursor: default;
+}
+
+.nxos-window-menubar span:hover {
+  background: #000080;
+  color: #fff;
+}
+
+/* Content area */
+.nxos-window-content {
+  flex: 1;
+  background: #fff;
+  border: 2px solid;
+  border-color: #808080 #fff #fff #808080;
+  margin: 2px;
+  overflow: auto;
+}
+
+/* Status bar */
+.nxos-window-statusbar {
+  height: 18px;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  font-size: 0.55rem;
+  color: #000;
+  background: #c0c0c0;
+  border-top: 1px solid #fff;
+  flex-shrink: 0;
+}
+
+/* ─── Win98 Taskbar ─────────────────────────────────────────────── */
+.nxos-taskbar {
+  height: 30px;
+  background: #c0c0c0;
+  border-top: 2px solid #fff;
+  display: flex;
+  align-items: center;
+  padding: 2px 4px;
+  gap: 2px;
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.nxos-start-btn {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 22px;
+  padding: 0 6px;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  font-family: inherit;
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: #000;
+  cursor: pointer;
+}
+
+.nxos-start-btn:active,
+.nxos-start-btn.pressed {
+  border-color: #808080 #fff #fff #808080;
+}
+
+.nxos-start-flag {
+  font-size: 0.8rem;
+}
+
+.nxos-taskbar-divider {
+  width: 2px;
+  height: 20px;
+  border-left: 1px solid #808080;
+  border-right: 1px solid #fff;
+  margin: 0 2px;
+}
+
+.nxos-taskbar-apps {
+  flex: 1;
+  display: flex;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.nxos-taskbar-app-btn {
+  height: 22px;
+  padding: 0 8px;
+  min-width: 100px;
+  max-width: 160px;
+  font-family: inherit;
+  font-size: 0.55rem;
+  text-align: left;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #000;
+}
+
+.nxos-taskbar-app-btn.active {
+  border-color: #808080 #fff #fff #808080;
+  background: #b0b0b0;
+  font-weight: bold;
+}
+
+/* System tray */
+.nxos-systray {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px;
+  height: 22px;
+  border: 2px solid;
+  border-color: #808080 #fff #fff #808080;
+  background: #c0c0c0;
+}
+
+.nxos-systray-item {
+  font-size: 0.5rem;
+  color: #000;
+}
+
+.nxos-systray-clock {
+  font-size: 0.55rem;
+  color: #000;
+  min-width: 50px;
+  text-align: center;
+}
+
+/* ─── Start Menu ────────────────────────────────────────────────── */
+.nxos-start-menu {
+  position: absolute;
+  bottom: 30px;
+  left: 4px;
+  display: flex;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  box-shadow: 2px 2px 0 #000;
+  z-index: 200;
+  animation: nxos-menu-open 0.1s ease-out;
+}
+
+@keyframes nxos-menu-open {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.nxos-start-sidebar {
+  width: 24px;
+  background: linear-gradient(0deg, #000080, #1084d0);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 4px;
+}
+
+.nxos-start-sidebar-text {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 0.6rem;
+  font-weight: bold;
+  color: #c0c0c0;
+  letter-spacing: 0.05rem;
+}
+
+.nxos-start-items {
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  padding: 2px 0;
+}
+
+.nxos-start-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 4px 8px;
+  font-size: 0.6rem;
+  color: #000;
+  cursor: pointer;
+}
+
+.nxos-start-item:hover {
+  background: #000080;
+  color: #fff;
+}
+
+.nxos-start-item.disabled {
+  color: #808080;
+}
+
+.nxos-start-item.disabled:hover {
+  background: #000080;
+  color: #808080;
+}
+
+.nxos-start-item.shutdown {
+  font-weight: bold;
+}
+
+.nxos-start-item-icon {
+  font-size: 0.8rem;
+  width: 20px;
+  text-align: center;
+}
+
+.nxos-start-divider {
+  height: 1px;
+  margin: 2px 4px;
+  border-top: 1px solid #808080;
+  border-bottom: 1px solid #fff;
+}
+
+/* ─── ShadowJira Board ──────────────────────────────────────────── */
+.nxos-jira-board {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  height: 100%;
+}
+
+.nxos-jira-col {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #c0c0c0;
+  overflow: hidden;
+}
+
+.nxos-jira-col:last-child {
+  border-right: none;
+}
+
+.nxos-col-hdr {
+  padding: 3px 6px;
+  font-size: 0.55rem;
+  font-weight: bold;
+  text-align: center;
+  background: #c0c0c0;
+  border-bottom: 1px solid #808080;
+}
+
+.nxos-col-hdr.backlog { color: #800000; }
+.nxos-col-hdr.progress { color: #000080; }
+.nxos-col-hdr.done { color: #006000; }
+
+.nxos-col-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: #fff;
+}
+
+.nxos-col-body::-webkit-scrollbar { width: 16px; }
+.nxos-col-body::-webkit-scrollbar-track {
+  background: #c0c0c0;
+  border-left: 1px solid #808080;
+}
+.nxos-col-body::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+}
+
+/* ─── Task Cards ────────────────────────────────────────────────── */
+.nxos-task-card {
+  background: #fffff0;
+  border: 1px solid #c0c0c0;
+  padding: 3px 5px;
+  cursor: grab;
+  font-size: 0.55rem;
+}
+
+.nxos-task-card:hover {
+  background: #e8e8d8;
+  border-color: #808080;
+}
+
+.nxos-task-card:active { cursor: grabbing; }
+
+.nxos-task-card.urgent {
+  border-color: #ff0000;
+  background: #fff0f0;
+}
+
+.nxos-task-card.done {
+  opacity: 0.5;
+  cursor: default;
+  background: #f0fff0;
+}
+
+.nxos-task-card.expired {
+  background: #fff0f0;
+  color: #800000;
+}
+
+.nxos-task-hdr {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1px;
+}
+
+.nxos-task-id {
+  color: #808080;
+  font-size: 0.5rem;
+}
+
+.nxos-task-title {
+  color: #000;
+  margin-bottom: 2px;
+  word-break: break-word;
+  line-height: 1.3;
+}
+
+.nxos-task-meta {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  font-size: 0.5rem;
+  color: #808080;
+}
+
+.nxos-dep { color: #804000; }
+.nxos-timer-urgent { color: #ff0000; font-weight: bold; animation: nxos-blink 0.5s infinite; }
+
+@keyframes nxos-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ─── QuickOutlook ──────────────────────────────────────────────── */
+.nxos-outlook-list {
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.nxos-outlook-empty {
+  color: #808080;
+  font-size: 0.6rem;
+  text-align: center;
+  padding: 30px;
+  font-style: italic;
+}
+
+.nxos-email {
+  background: #fffff0;
+  border: 1px solid #c0c0c0;
+  padding: 6px;
+  font-size: 0.55rem;
+}
+
+.nxos-email.urgent {
+  border-color: #ff0000;
+  border-left: 3px solid #ff0000;
+  background: #fff0f0;
+}
+
+.nxos-email.read {
+  opacity: 0.4;
+  font-size: 0.5rem;
+  padding: 3px 6px;
+}
+
+.nxos-email-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2px;
+  color: #000;
+}
+
+.nxos-urgent-badge {
+  background: #ff0000;
+  color: #fff;
+  font-size: 0.5rem;
+  font-weight: bold;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nxos-email-timer { font-size: 0.5rem; color: #808080; }
+
+.nxos-email-subject {
+  font-weight: bold;
+  color: #000;
+  margin-bottom: 2px;
+}
+
+.nxos-email-body {
+  color: #404040;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.nxos-email-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* ─── Win98 Button ──────────────────────────────────────────────── */
+.nxos-btn {
+  height: 20px;
+  padding: 0 12px;
+  font-family: inherit;
+  font-size: 0.55rem;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  cursor: pointer;
+  color: #000;
+}
+
+.nxos-btn:active {
+  border-color: #808080 #fff #fff #808080;
+}
+
+.nxos-btn:hover {
+  background: #d0d0d0;
+}
+
+/* ─── Notifications ─────────────────────────────────────────────── */
+.nxos-notifications {
+  position: absolute;
+  bottom: 36px;
+  right: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 150;
+  pointer-events: none;
+}
+
+.nxos-notification {
+  padding: 3px 8px;
+  font-size: 0.5rem;
+  background: #ffffc0;
+  border: 1px solid #808080;
+  box-shadow: 1px 1px 0 #000;
+  color: #000;
+  max-width: 220px;
+  animation: nxos-notif-in 0.2s ease-out;
+}
+
+@keyframes nxos-notif-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.nxos-notification.success { border-color: #008000; }
+.nxos-notification.error { border-color: #ff0000; background: #ffd0d0; }
+.nxos-notification.task { border-color: #000080; background: #d0d0ff; }
+.nxos-notification.email { border-color: #804000; background: #ffe0c0; }
+
+/* ─── BSOD (Game Over) ─────────────────────────────────────────── */
+.nxos-bsod {
+  position: absolute;
+  inset: 0;
+  background: #0000aa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  animation: nxos-bsod-in 0.3s ease-out;
+}
+
+@keyframes nxos-bsod-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.nxos-bsod-inner {
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  max-width: 560px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.nxos-bsod-inner h1 {
+  background: #a0a0a0;
+  color: #0000aa;
+  display: inline-block;
+  padding: 0 8px;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+
+.nxos-bsod-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nxos-bsod-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.nxos-bsod .nxos-btn {
+  background: #a0a0a0;
+  color: #0000aa;
+  font-weight: bold;
+}
+
+/* ─── Boot Sequence ─────────────────────────────────────────────── */
+.nxos-boot {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px;
+}
+
+.nxos-boot-terminal {
+  max-width: 500px;
+}
+
+.nxos-boot-line {
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  color: #aaa;
+  line-height: 1.6;
+  animation: nxos-line-in 0.15s ease-out;
+}
+
+@keyframes nxos-line-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.nxos-boot-cursor {
+  font-family: 'Courier New', monospace;
+  color: #aaa;
+  animation: nxos-blink 0.5s infinite;
+}
+
+.nxos-boot-bar {
+  max-width: 500px;
+  height: 6px;
+  border: 1px solid #555;
+  margin-top: 16px;
+}
+
+.nxos-boot-bar-fill {
+  height: 100%;
+  background: #aaa;
+  transition: width 0.3s;
+}
+
+/* ─── Puzzle Modal ──────────────────────────────────────────────── */
+.nxos-puzzle-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  animation: nxos-bsod-in 0.2s ease-out;
+}
+
+.nxos-puzzle-dialog {
+  width: 420px;
+  max-height: 80%;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  box-shadow: 3px 3px 0 #000;
+  display: flex;
+  flex-direction: column;
+}
+
+.nxos-puzzle-dialog.shake {
+  animation: nxos-shake 0.3s ease-out;
+}
+
+@keyframes nxos-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+.nxos-puzzle-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nxos-puzzle-type {
+  font-size: 0.6rem;
+  font-weight: bold;
+  color: #000080;
+  letter-spacing: 0.1rem;
+  text-align: center;
+  padding: 4px;
+  background: #e0e0e0;
+  border: 1px solid;
+  border-color: #808080 #fff #fff #808080;
+}
+
+.nxos-puzzle-code {
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  background: #fff;
+  color: #000;
+  padding: 10px;
+  border: 2px solid;
+  border-color: #808080 #fff #fff #808080;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.5;
+  margin: 0;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.nxos-puzzle-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nxos-puzzle-input {
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  padding: 4px 6px;
+  border: 2px solid;
+  border-color: #808080 #fff #fff #808080;
+  background: #fff;
+  color: #000;
+  outline: none;
+}
+
+.nxos-puzzle-input:focus {
+  background: #fffff0;
+}
+
+.nxos-puzzle-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.nxos-puzzle-hint {
+  font-size: 0.55rem;
+  color: #006000;
+  background: #e0ffe0;
+  padding: 4px 8px;
+  border: 1px solid #80c080;
+}
+
+.nxos-puzzle-wrong {
+  font-size: 0.55rem;
+  color: #800000;
+  background: #ffe0e0;
+  padding: 4px 8px;
+  border: 1px solid #c08080;
+  text-align: center;
+  font-weight: bold;
+}
+
+.nxos-puzzle-bonus {
+  font-size: 0.5rem;
+  color: #808080;
+  text-align: center;
+}
+
+/* ─── OS Balloon Popups (System Tray) ───────────────────────────── */
+.nxos-os-balloons {
+  position: absolute;
+  bottom: 36px;
+  right: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  z-index: 180;
+}
+
+.nxos-os-balloon {
+  width: 220px;
+  background: #ffffcc;
+  border: 1px solid #000;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+  padding: 0;
+  font-size: 0.5rem;
+  cursor: pointer;
+  animation: nxos-balloon-in 0.25s ease-out;
+  position: relative;
+}
+
+.nxos-os-balloon::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  right: 20px;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid #000;
+}
+
+@keyframes nxos-balloon-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.nxos-balloon-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px;
+  background: linear-gradient(90deg, #e8e8c8, #ffffcc);
+  border-bottom: 1px solid #c0c080;
+}
+
+.nxos-balloon-icon {
+  font-size: 0.7rem;
+}
+
+.nxos-balloon-title {
+  flex: 1;
+  font-weight: bold;
+  color: #000;
+  font-size: 0.5rem;
+}
+
+.nxos-balloon-close {
+  background: none;
+  border: none;
+  font-size: 0.5rem;
+  cursor: pointer;
+  color: #808080;
+  padding: 0 2px;
+  font-family: inherit;
+}
+
+.nxos-balloon-close:hover {
+  color: #000;
+}
+
+.nxos-balloon-text {
+  padding: 4px 6px;
+  color: #000;
+  white-space: pre-line;
+  line-height: 1.4;
+}
+
+/* Balloon type colors */
+.nxos-os-balloon.task {
+  background: #e0e0ff;
+  border-color: #000080;
+}
+.nxos-os-balloon.task::after {
+  border-top-color: #000080;
+}
+.nxos-os-balloon.task .nxos-balloon-header {
+  background: linear-gradient(90deg, #c0c0e0, #e0e0ff);
+  border-bottom-color: #8080c0;
+}
+
+.nxos-os-balloon.email {
+  background: #ffe8d0;
+  border-color: #804000;
+}
+.nxos-os-balloon.email::after {
+  border-top-color: #804000;
+}
+.nxos-os-balloon.email .nxos-balloon-header {
+  background: linear-gradient(90deg, #e0c8a0, #ffe8d0);
+  border-bottom-color: #c0a080;
+}
+
+.nxos-os-balloon.meeting {
+  background: #d0ffd0;
+  border-color: #006000;
+}
+.nxos-os-balloon.meeting::after {
+  border-top-color: #006000;
+}
+.nxos-os-balloon.meeting .nxos-balloon-header {
+  background: linear-gradient(90deg, #a0e0a0, #d0ffd0);
+  border-bottom-color: #80c080;
+}
+
+.nxos-notification.meeting {
+  border-color: #006000;
+  background: #d0ffd0;
+}

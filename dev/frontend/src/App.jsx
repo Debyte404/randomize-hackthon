@@ -1,44 +1,30 @@
+import { useEffect } from 'react'
 import { useGameStore } from './store/useGameStore'
 import Landing3D from './components/overlays/Landing3D'
-import MainMenu from './components/overlays/MainMenu'
+import Game3D from './3d/Game3D'
+import Workstation2D from './components/workstation/Workstation2D'
 
 function App() {
   const gameState = useGameStore((state) => state.gameState)
+
+  // Force reset on fresh page load to prevent stale persisted state
+  // skipping the 3D walkthrough
+  useEffect(() => {
+    const current = useGameStore.getState().gameState
+    if (current === '2D_WORK' || current === 'PAUSE') {
+      useGameStore.getState().setGameState('START')
+    }
+  }, [])
 
   return (
     <div className="w-full h-full bg-black text-nexus-accent overflow-hidden selection:bg-nexus-accent selection:text-black font-mono">
       {['START', 'MAIN_MENU'].includes(gameState) && <Landing3D />}
       
-      {/* Placeholder for 3D/2D game phases */}
-      {gameState.startsWith('3D_') && (
-        <div className="w-full h-full flex items-center justify-center p-24">
-          <div className="text-center">
-            <h2 className="text-4xl font-black mb-4">TRANSITIONING TO PHYSICAL REALITY...</h2>
-            <p className="opacity-50">Physical Scene: {gameState}</p>
-            <button 
-               onClick={() => useGameStore.getState().setGameState('START')}
-               className="mt-8 text-xs underline opacity-40 hover:opacity-100"
-            >
-              // Abort Simulation
-            </button>
-          </div>
-        </div>
-      )}
+      {/* 3D Walk-around Phases */}
+      {gameState.startsWith('3D_') && <Game3D />}
 
-      {gameState === '2D_WORK' && (
-        <div className="w-full h-full flex items-center justify-center p-24">
-          <div className="text-center">
-            <h2 className="text-4xl font-black mb-4">BOOTING WORKSTATION...</h2>
-            <p className="opacity-50">Digital Scene: NexusCorp OS</p>
-            <button 
-               onClick={() => useGameStore.getState().setGameState('START')}
-               className="mt-8 text-xs underline opacity-40 hover:opacity-100"
-            >
-              // Log Off
-            </button>
-          </div>
-        </div>
-      )}
+      {/* 2D Workstation Phase */}
+      {gameState === '2D_WORK' && <Workstation2D />}
     </div>
   )
 }
