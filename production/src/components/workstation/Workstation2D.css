@@ -1,0 +1,2166 @@
+/* ═══════════════════════════════════════════════════════════════════
+   NexusOS 98 — Retro Windows Desktop inside CRT Monitor
+   Authentic Win98 look with dull corporate colors
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── Monitor Frame ─────────────────────────────────────────────── */
+.nxos-monitor-frame {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a1a;
+  font-family: 'MS Sans Serif', 'Tahoma', 'Segoe UI', 'Arial', sans-serif;
+  user-select: none;
+}
+
+/* ─── CRT Bezel (the plastic shell around the glass) ────────────── */
+.nxos-crt-bezel {
+  position: relative;
+  width: calc(100% - 80px);
+  height: calc(100% - 100px);
+  max-width: 1280px;
+  max-height: 960px;
+  background: #000;
+  border: 12px solid #c8c0b0;
+  border-top-color: #d8d0c0;
+  border-left-color: #d8d0c0;
+  border-bottom-color: #a8a090;
+  border-right-color: #a8a090;
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 3px #888,
+    0 0 0 6px #666,
+    0 8px 30px rgba(0,0,0,0.8),
+    inset 0 0 60px rgba(0,0,0,0.3);
+  overflow: hidden;
+}
+
+/* Scanlines */
+.nxos-scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    rgba(0, 0, 0, 0.08) 1px,
+    rgba(0, 0, 0, 0.08) 2px
+  );
+  mix-blend-mode: multiply;
+}
+
+/* Screen curvature vignette */
+.nxos-screen-curve {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9997;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.4) 100%);
+}
+
+/* ─── Monitor Stand ─────────────────────────────────────────────── */
+.nxos-monitor-stand {
+  width: 60px;
+  height: 20px;
+  background: linear-gradient(180deg, #b8b0a0, #a8a090);
+  border-radius: 0 0 4px 4px;
+}
+
+.nxos-monitor-base {
+  width: 140px;
+  height: 8px;
+  background: linear-gradient(180deg, #a8a090, #989080);
+  border-radius: 0 0 6px 6px;
+}
+
+.nxos-power-led {
+  position: absolute;
+  bottom: 48px;
+  right: calc(50% - 580px);
+  width: 6px;
+  height: 6px;
+  background: #00cc00;
+  border-radius: 50%;
+  box-shadow: 0 0 4px #00ff00;
+  animation: nxos-led-blink 3s infinite;
+}
+
+@keyframes nxos-led-blink {
+  0%, 90%, 100% { opacity: 1; }
+  95% { opacity: 0.3; }
+}
+
+/* ─── Desktop ───────────────────────────────────────────────────── */
+.nxos-desktop {
+  position: absolute;
+  inset: 0;
+  background: #008080; /* Classic teal Win98 desktop */
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Desktop Icons ─────────────────────────────────────────────── */
+.nxos-desktop-icons {
+  flex: 1;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.nxos-desktop-icon {
+  width: 68px;
+  height: 68px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  padding: 4px;
+  border: 1px solid transparent;
+}
+
+.nxos-desktop-icon:hover {
+  background: rgba(0, 0, 128, 0.15);
+}
+
+.nxos-desktop-icon:focus,
+.nxos-desktop-icon:active {
+  background: rgba(0, 0, 128, 0.3);
+  border: 1px dotted #fff;
+}
+
+.nxos-icon-img {
+  font-size: 1.6rem;
+  line-height: 1;
+  margin-bottom: 2px;
+  filter: drop-shadow(1px 1px 0px rgba(0,0,0,0.8));
+}
+
+.nxos-icon-label {
+  font-size: 0.55rem;
+  color: #fff;
+  text-align: center;
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  word-break: break-word;
+  line-height: 1.2;
+}
+
+/* ─── Win98 Window ──────────────────────────────────────────────── */
+.nxos-window {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  bottom: 50px;
+  display: flex;
+  flex-direction: column;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  box-shadow: 1px 1px 0 #000;
+  z-index: 20;
+}
+
+.nxos-window.active .nxos-window-titlebar {
+  background: linear-gradient(90deg, #000080, #1084d0);
+}
+
+.nxos-window-titlebar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 20px;
+  padding: 0 3px;
+  background: linear-gradient(90deg, #808080, #a0a0a0);
+  flex-shrink: 0;
+}
+
+.nxos-window-titlebar-left {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.nxos-window-icon {
+  font-size: 0.65rem;
+}
+
+.nxos-window-title {
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nxos-window-buttons {
+  display: flex;
+  gap: 2px;
+}
+
+.nxos-win-btn {
+  width: 16px;
+  height: 14px;
+  font-size: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #c0c0c0;
+  border: 1px solid;
+  border-color: #fff #808080 #808080 #fff;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  line-height: 1;
+  color: #000;
+}
+
+.nxos-win-btn:active {
+  border-color: #808080 #fff #fff #808080;
+}
+
+.nxos-win-btn.close:hover {
+  background: #c0c0c0;
+}
+
+/* Menu bar */
+.nxos-window-menubar {
+  display: flex;
+  gap: 0;
+  padding: 1px 4px;
+  background: #c0c0c0;
+  border-bottom: 1px solid #808080;
+  flex-shrink: 0;
+}
+
+.nxos-window-menubar span {
+  font-size: 0.6rem;
+  padding: 1px 6px;
+  color: #000;
+  cursor: default;
+}
+
+.nxos-window-menubar span:hover {
+  background: #000080;
+  color: #fff;
+}
+
+/* Content area */
+.nxos-window-content {
+  flex: 1;
+  background: #fff;
+  border: 2px solid;
+  border-color: #808080 #fff #fff #808080;
+  margin: 2px;
+  overflow: auto;
+}
+
+/* Status bar */
+.nxos-window-statusbar {
+  height: 18px;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  font-size: 0.55rem;
+  color: #000;
+  background: #c0c0c0;
+  border-top: 1px solid #fff;
+  flex-shrink: 0;
+}
+
+/* ─── Win98 Taskbar ─────────────────────────────────────────────── */
+.nxos-taskbar {
+  height: 30px;
+  background: #c0c0c0;
+  border-top: 2px solid #fff;
+  display: flex;
+  align-items: center;
+  padding: 2px 4px;
+  gap: 2px;
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.nxos-start-btn {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 22px;
+  padding: 0 6px;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  font-family: inherit;
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: #000;
+  cursor: pointer;
+}
+
+.nxos-start-btn:active,
+.nxos-start-btn.pressed {
+  border-color: #808080 #fff #fff #808080;
+}
+
+.nxos-start-flag {
+  font-size: 0.8rem;
+}
+
+.nxos-taskbar-divider {
+  width: 2px;
+  height: 20px;
+  border-left: 1px solid #808080;
+  border-right: 1px solid #fff;
+  margin: 0 2px;
+}
+
+.nxos-taskbar-apps {
+  flex: 1;
+  display: flex;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.nxos-taskbar-app-btn {
+  height: 22px;
+  padding: 0 8px;
+  min-width: 100px;
+  max-width: 160px;
+  font-family: inherit;
+  font-size: 0.55rem;
+  text-align: left;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #000;
+}
+
+.nxos-taskbar-app-btn.active {
+  border-color: #808080 #fff #fff #808080;
+  background: #b0b0b0;
+  font-weight: bold;
+}
+
+/* System tray */
+.nxos-systray {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px;
+  height: 22px;
+  border: 2px solid;
+  border-color: #808080 #fff #fff #808080;
+  background: #c0c0c0;
+}
+
+.nxos-systray-item {
+  font-size: 0.5rem;
+  color: #000;
+}
+
+.nxos-systray-clock {
+  font-size: 0.55rem;
+  color: #000;
+  min-width: 50px;
+  text-align: center;
+}
+
+/* ─── Start Menu ────────────────────────────────────────────────── */
+.nxos-start-menu {
+  position: absolute;
+  bottom: 30px;
+  left: 4px;
+  display: flex;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  box-shadow: 2px 2px 0 #000;
+  z-index: 200;
+  animation: nxos-menu-open 0.1s ease-out;
+}
+
+@keyframes nxos-menu-open {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.nxos-start-sidebar {
+  width: 24px;
+  background: linear-gradient(0deg, #000080, #1084d0);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 4px;
+}
+
+.nxos-start-sidebar-text {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 0.6rem;
+  font-weight: bold;
+  color: #c0c0c0;
+  letter-spacing: 0.05rem;
+}
+
+.nxos-start-items {
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  padding: 2px 0;
+}
+
+.nxos-start-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 4px 8px;
+  font-size: 0.6rem;
+  color: #000;
+  cursor: pointer;
+}
+
+.nxos-start-item:hover {
+  background: #000080;
+  color: #fff;
+}
+
+.nxos-start-item.disabled {
+  color: #808080;
+}
+
+.nxos-start-item.disabled:hover {
+  background: #000080;
+  color: #808080;
+}
+
+.nxos-start-item.shutdown {
+  font-weight: bold;
+}
+
+.nxos-start-item-icon {
+  font-size: 0.8rem;
+  width: 20px;
+  text-align: center;
+}
+
+.nxos-start-divider {
+  height: 1px;
+  margin: 2px 4px;
+  border-top: 1px solid #808080;
+  border-bottom: 1px solid #fff;
+}
+
+/* ─── ShadowJira Board ──────────────────────────────────────────── */
+.nxos-jira-board {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  height: 100%;
+}
+
+.nxos-jira-col {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #c0c0c0;
+  overflow: hidden;
+}
+
+.nxos-jira-col:last-child {
+  border-right: none;
+}
+
+.nxos-col-hdr {
+  padding: 3px 6px;
+  font-size: 0.55rem;
+  font-weight: bold;
+  text-align: center;
+  background: #c0c0c0;
+  border-bottom: 1px solid #808080;
+}
+
+.nxos-col-hdr.backlog { color: #800000; }
+.nxos-col-hdr.progress { color: #000080; }
+.nxos-col-hdr.done { color: #006000; }
+
+.nxos-col-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: #fff;
+}
+
+.nxos-col-body::-webkit-scrollbar { width: 16px; }
+.nxos-col-body::-webkit-scrollbar-track {
+  background: #c0c0c0;
+  border-left: 1px solid #808080;
+}
+.nxos-col-body::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+}
+
+/* ─── Task Cards ────────────────────────────────────────────────── */
+.nxos-task-card {
+  background: #fffff0;
+  border: 1px solid #c0c0c0;
+  padding: 3px 5px;
+  cursor: grab;
+  font-size: 0.55rem;
+}
+
+.nxos-task-card:hover {
+  background: #e8e8d8;
+  border-color: #808080;
+}
+
+.nxos-task-card:active { cursor: grabbing; }
+
+.nxos-task-card.urgent {
+  border-color: #ff0000;
+  background: #fff0f0;
+}
+
+.nxos-task-card.done {
+  opacity: 0.5;
+  cursor: default;
+  background: #f0fff0;
+}
+
+.nxos-task-card.expired {
+  background: #fff0f0;
+  color: #800000;
+}
+
+.nxos-task-hdr {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1px;
+}
+
+.nxos-task-id {
+  color: #808080;
+  font-size: 0.5rem;
+}
+
+.nxos-task-title {
+  color: #000;
+  margin-bottom: 2px;
+  word-break: break-word;
+  line-height: 1.3;
+}
+
+.nxos-task-meta {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  font-size: 0.5rem;
+  color: #808080;
+}
+
+.nxos-dep { color: #804000; }
+.nxos-timer-urgent { color: #ff0000; font-weight: bold; animation: nxos-blink 0.5s infinite; }
+
+@keyframes nxos-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ─── QuickOutlook ──────────────────────────────────────────────── */
+.nxos-outlook-list {
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.nxos-outlook-empty {
+  color: #808080;
+  font-size: 0.6rem;
+  text-align: center;
+  padding: 30px;
+  font-style: italic;
+}
+
+.nxos-email {
+  background: #fffff0;
+  border: 1px solid #c0c0c0;
+  padding: 6px;
+  font-size: 0.55rem;
+}
+
+.nxos-email.urgent {
+  border-color: #ff0000;
+  border-left: 3px solid #ff0000;
+  background: #fff0f0;
+}
+
+.nxos-email.read {
+  opacity: 0.4;
+  font-size: 0.5rem;
+  padding: 3px 6px;
+}
+
+.nxos-email-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2px;
+  color: #000;
+}
+
+.nxos-urgent-badge {
+  background: #ff0000;
+  color: #fff;
+  font-size: 0.5rem;
+  font-weight: bold;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nxos-email-timer { font-size: 0.5rem; color: #808080; }
+
+.nxos-email-subject {
+  font-weight: bold;
+  color: #000;
+  margin-bottom: 2px;
+}
+
+.nxos-email-body {
+  color: #404040;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.nxos-email-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* ─── Win98 Button ──────────────────────────────────────────────── */
+.nxos-btn {
+  height: 20px;
+  padding: 0 12px;
+  font-family: inherit;
+  font-size: 0.55rem;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  cursor: pointer;
+  color: #000;
+}
+
+.nxos-btn:active {
+  border-color: #808080 #fff #fff #808080;
+}
+
+.nxos-btn:hover {
+  background: #d0d0d0;
+}
+
+/* ─── Notifications ─────────────────────────────────────────────── */
+.nxos-notifications {
+  position: absolute;
+  bottom: 36px;
+  right: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 150;
+  pointer-events: none;
+}
+
+.nxos-notification {
+  padding: 3px 8px;
+  font-size: 0.5rem;
+  background: #ffffc0;
+  border: 1px solid #808080;
+  box-shadow: 1px 1px 0 #000;
+  color: #000;
+  max-width: 220px;
+  animation: nxos-notif-in 0.2s ease-out;
+}
+
+@keyframes nxos-notif-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.nxos-notification.success { border-color: #008000; }
+.nxos-notification.error { border-color: #ff0000; background: #ffd0d0; }
+.nxos-notification.task { border-color: #000080; background: #d0d0ff; }
+.nxos-notification.email { border-color: #804000; background: #ffe0c0; }
+
+/* ─── BSOD (Game Over) ─────────────────────────────────────────── */
+.nxos-bsod {
+  position: absolute;
+  inset: 0;
+  background: #0000aa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  animation: nxos-bsod-in 0.3s ease-out;
+}
+
+@keyframes nxos-bsod-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.nxos-bsod-inner {
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  max-width: 560px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.nxos-bsod-inner h1 {
+  background: #a0a0a0;
+  color: #0000aa;
+  display: inline-block;
+  padding: 0 8px;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+
+.nxos-bsod-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nxos-bsod-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.nxos-bsod .nxos-btn {
+  background: #a0a0a0;
+  color: #0000aa;
+  font-weight: bold;
+}
+
+/* ─── Boot Sequence ─────────────────────────────────────────────── */
+.nxos-boot {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px;
+}
+
+.nxos-boot-terminal {
+  max-width: 500px;
+}
+
+.nxos-boot-line {
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  color: #aaa;
+  line-height: 1.6;
+  animation: nxos-line-in 0.15s ease-out;
+}
+
+@keyframes nxos-line-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.nxos-boot-cursor {
+  font-family: 'Courier New', monospace;
+  color: #aaa;
+  animation: nxos-blink 0.5s infinite;
+}
+
+.nxos-boot-bar {
+  max-width: 500px;
+  height: 6px;
+  border: 1px solid #555;
+  margin-top: 16px;
+}
+
+.nxos-boot-bar-fill {
+  height: 100%;
+  background: #aaa;
+  transition: width 0.3s;
+}
+
+/* ─── Puzzle Modal ──────────────────────────────────────────────── */
+.nxos-puzzle-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  animation: nxos-bsod-in 0.2s ease-out;
+}
+
+.nxos-puzzle-dialog {
+  width: 420px;
+  max-height: 80%;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  box-shadow: 3px 3px 0 #000;
+  display: flex;
+  flex-direction: column;
+}
+
+.nxos-puzzle-dialog.shake {
+  animation: nxos-shake 0.3s ease-out;
+}
+
+@keyframes nxos-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+.nxos-puzzle-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nxos-puzzle-type {
+  font-size: 0.6rem;
+  font-weight: bold;
+  color: #000080;
+  letter-spacing: 0.1rem;
+  text-align: center;
+  padding: 4px;
+  background: #e0e0e0;
+  border: 1px solid;
+  border-color: #808080 #fff #fff #808080;
+}
+
+.nxos-puzzle-code {
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  background: #fff;
+  color: #000;
+  padding: 10px;
+  border: 2px solid;
+  border-color: #808080 #fff #fff #808080;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.5;
+  margin: 0;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.nxos-puzzle-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nxos-puzzle-input {
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  padding: 4px 6px;
+  border: 2px solid;
+  border-color: #808080 #fff #fff #808080;
+  background: #fff;
+  color: #000;
+  outline: none;
+}
+
+.nxos-puzzle-input:focus {
+  background: #fffff0;
+}
+
+.nxos-puzzle-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.nxos-puzzle-hint {
+  font-size: 0.55rem;
+  color: #006000;
+  background: #e0ffe0;
+  padding: 4px 8px;
+  border: 1px solid #80c080;
+}
+
+.nxos-puzzle-wrong {
+  font-size: 0.55rem;
+  color: #800000;
+  background: #ffe0e0;
+  padding: 4px 8px;
+  border: 1px solid #c08080;
+  text-align: center;
+  font-weight: bold;
+}
+
+.nxos-puzzle-bonus {
+  font-size: 0.5rem;
+  color: #808080;
+  text-align: center;
+}
+
+/* ─── OS Balloon Popups (System Tray) ───────────────────────────── */
+.nxos-os-balloons {
+  position: absolute;
+  bottom: 36px;
+  right: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  z-index: 180;
+}
+
+.nxos-os-balloon {
+  width: 220px;
+  background: #ffffcc;
+  border: 1px solid #000;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+  padding: 0;
+  font-size: 0.5rem;
+  cursor: pointer;
+  animation: nxos-balloon-in 0.25s ease-out;
+  position: relative;
+}
+
+.nxos-os-balloon::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  right: 20px;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid #000;
+}
+
+@keyframes nxos-balloon-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.nxos-balloon-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px;
+  background: linear-gradient(90deg, #e8e8c8, #ffffcc);
+  border-bottom: 1px solid #c0c080;
+}
+
+.nxos-balloon-icon {
+  font-size: 0.7rem;
+}
+
+.nxos-balloon-title {
+  flex: 1;
+  font-weight: bold;
+  color: #000;
+  font-size: 0.5rem;
+}
+
+.nxos-balloon-close {
+  background: none;
+  border: none;
+  font-size: 0.5rem;
+  cursor: pointer;
+  color: #808080;
+  padding: 0 2px;
+  font-family: inherit;
+}
+
+.nxos-balloon-close:hover {
+  color: #000;
+}
+
+.nxos-balloon-text {
+  padding: 4px 6px;
+  color: #000;
+  white-space: pre-line;
+  line-height: 1.4;
+}
+
+/* Balloon type colors */
+.nxos-os-balloon.task {
+  background: #e0e0ff;
+  border-color: #000080;
+}
+.nxos-os-balloon.task::after {
+  border-top-color: #000080;
+}
+.nxos-os-balloon.task .nxos-balloon-header {
+  background: linear-gradient(90deg, #c0c0e0, #e0e0ff);
+  border-bottom-color: #8080c0;
+}
+
+.nxos-os-balloon.email {
+  background: #ffe8d0;
+  border-color: #804000;
+}
+.nxos-os-balloon.email::after {
+  border-top-color: #804000;
+}
+.nxos-os-balloon.email .nxos-balloon-header {
+  background: linear-gradient(90deg, #e0c8a0, #ffe8d0);
+  border-bottom-color: #c0a080;
+}
+
+.nxos-os-balloon.meeting {
+  background: #d0ffd0;
+  border-color: #006000;
+}
+.nxos-os-balloon.meeting::after {
+  border-top-color: #006000;
+}
+.nxos-os-balloon.meeting .nxos-balloon-header {
+  background: linear-gradient(90deg, #a0e0a0, #d0ffd0);
+  border-bottom-color: #80c080;
+}
+
+.nxos-notification.meeting {
+  border-color: #006000;
+  background: #d0ffd0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   FAKE APP CONTENT STYLES
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── NexusNet Browser ──────────────────────────────────────────── */
+.nxos-browser {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.nxos-browser-toolbar {
+  display: flex;
+  gap: 3px;
+  padding: 3px 4px;
+  background: #e0e0e0;
+  border-bottom: 1px solid #c0c0c0;
+  align-items: center;
+}
+
+.nxos-browser-urlbar {
+  flex: 1;
+  padding: 1px 4px;
+  font-size: 0.5rem;
+  background: #fff;
+  border: 2px solid;
+  border-color: #808080 #fff #fff #808080;
+  color: #000080;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.nxos-browser-page {
+  padding: 8px;
+  font-size: 0.55rem;
+  color: #000;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.nxos-browser-page h2 {
+  font-size: 0.8rem;
+  color: #000080;
+  margin: 0 0 4px 0;
+}
+
+.nxos-browser-page h3 {
+  font-size: 0.7rem;
+  color: #000080;
+  margin: 0 0 6px 0;
+}
+
+.nxos-intranet-header {
+  text-align: center;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #000080;
+}
+
+.nxos-intranet-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.nxos-intranet-card {
+  padding: 6px;
+  background: #f0f0ff;
+  border: 1px solid #c0c0e0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.5rem;
+}
+
+.nxos-intranet-card:hover {
+  background: #e0e0ff;
+  border-color: #000080;
+}
+
+.nxos-card-icon {
+  font-size: 1rem;
+}
+
+.nxos-intranet-card strong {
+  font-size: 0.55rem;
+  color: #000080;
+}
+
+.nxos-intranet-ticker {
+  padding: 4px 8px;
+  background: #000080;
+  color: #ffff00;
+  font-size: 0.45rem;
+  overflow: hidden;
+  white-space: nowrap;
+  animation: nxos-ticker 20s linear infinite;
+}
+
+@keyframes nxos-ticker {
+  from { transform: translateX(100%); }
+  to { transform: translateX(-100%); }
+}
+
+.nxos-news-item {
+  padding: 5px 6px;
+  margin-bottom: 4px;
+  background: #f8f8f8;
+  border: 1px solid #e0e0e0;
+  font-size: 0.5rem;
+  line-height: 1.4;
+}
+
+.nxos-cafe-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.5rem;
+  margin-bottom: 8px;
+}
+
+.nxos-cafe-table th,
+.nxos-cafe-table td {
+  padding: 3px 6px;
+  border: 1px solid #c0c0c0;
+  text-align: left;
+}
+
+.nxos-cafe-table th {
+  background: #c0c0c0;
+  font-weight: bold;
+}
+
+.nxos-cafe-table tr:nth-child(even) td {
+  background: #f8f8f8;
+}
+
+/* ─── Notepad ───────────────────────────────────────────────────── */
+.nxos-notepad-area {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: 'Courier New', monospace;
+  font-size: 0.6rem;
+  line-height: 1.5;
+  padding: 6px;
+  color: #000;
+  background: #fff;
+}
+
+/* ─── My Computer ───────────────────────────────────────────────── */
+.nxos-mycomputer {
+  padding: 8px;
+  font-size: 0.55rem;
+}
+
+.nxos-mc-section {
+  margin-bottom: 8px;
+}
+
+.nxos-mc-header {
+  font-weight: bold;
+  color: #000080;
+  padding-bottom: 2px;
+  border-bottom: 1px solid #c0c0c0;
+  margin-bottom: 4px;
+  font-size: 0.55rem;
+}
+
+.nxos-mc-drives {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.nxos-mc-drive {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  background: #f8f8f8;
+  border: 1px solid #e0e0e0;
+  cursor: default;
+}
+
+.nxos-mc-drive:hover {
+  background: #e0e0ff;
+  border-color: #000080;
+}
+
+.nxos-mc-drive-icon {
+  font-size: 1rem;
+}
+
+.nxos-mc-detail {
+  color: #808080;
+  font-size: 0.45rem;
+}
+
+.nxos-mc-sysinfo {
+  margin-top: 8px;
+  padding: 4px 6px;
+  background: #e0e0e0;
+  border: 1px solid #c0c0c0;
+  font-size: 0.45rem;
+  color: #404040;
+}
+
+/* ─── My Documents ──────────────────────────────────────────────── */
+.nxos-documents {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.nxos-doc-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.nxos-doc-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px;
+  font-size: 0.5rem;
+  cursor: default;
+  border: 1px solid transparent;
+}
+
+.nxos-doc-item:hover {
+  background: #e0e0ff;
+}
+
+.nxos-doc-item.selected {
+  background: #000080;
+  color: #fff;
+  border: 1px dotted #fff;
+}
+
+.nxos-doc-icon { font-size: 0.8rem; width: 16px; text-align: center; }
+.nxos-doc-name { flex: 1; }
+.nxos-doc-size { width: 40px; text-align: right; color: #808080; }
+.nxos-doc-date { width: 55px; text-align: right; color: #808080; }
+
+.nxos-doc-preview {
+  height: 100px;
+  border-top: 2px solid;
+  border-color: #808080 #fff #fff #808080;
+  padding: 4px;
+  background: #fffff0;
+  overflow-y: auto;
+}
+
+.nxos-doc-preview pre {
+  font-family: 'Courier New', monospace;
+  font-size: 0.5rem;
+  color: #000;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ─── Recycle Bin ────────────────────────────────────────────────── */
+.nxos-recycle {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nxos-recycle-empty {
+  text-align: center;
+  font-size: 0.6rem;
+  color: #808080;
+}
+
+/* ─── Notification Center ───────────────────────────────────────── */
+.nxos-notif-center {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 30px;
+  width: 240px;
+  background: #e8e8e8;
+  border-left: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  box-shadow: -2px 0 4px rgba(0,0,0,0.2);
+  z-index: 250;
+  display: flex;
+  flex-direction: column;
+  animation: nxos-notif-slide 0.15s ease-out;
+}
+
+@keyframes nxos-notif-slide {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.nxos-notif-center-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 6px;
+  background: linear-gradient(90deg, #000080, #1084d0);
+  color: #fff;
+  font-size: 0.55rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.nxos-notif-center-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.nxos-notif-center-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.nxos-notif-center-body::-webkit-scrollbar { width: 14px; }
+.nxos-notif-center-body::-webkit-scrollbar-track {
+  background: #c0c0c0;
+  border-left: 1px solid #808080;
+}
+.nxos-notif-center-body::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+}
+
+.nxos-notif-center-empty {
+  padding: 20px 10px;
+  text-align: center;
+  font-size: 0.5rem;
+  color: #808080;
+  font-style: italic;
+}
+
+.nxos-notif-center-item {
+  display: flex;
+  gap: 5px;
+  padding: 4px 5px;
+  border-bottom: 1px solid #d0d0d0;
+  font-size: 0.5rem;
+  background: #f4f4f4;
+}
+
+.nxos-notif-center-item:hover {
+  background: #e0e0ff;
+}
+
+.nxos-notif-center-item.task { border-left: 3px solid #000080; }
+.nxos-notif-center-item.email { border-left: 3px solid #804000; }
+.nxos-notif-center-item.meeting { border-left: 3px solid #006000; }
+.nxos-notif-center-item.success { border-left: 3px solid #008000; }
+.nxos-notif-center-item.error { border-left: 3px solid #cc0000; }
+
+.nxos-notif-center-icon {
+  font-size: 0.7rem;
+  flex-shrink: 0;
+  width: 16px;
+  text-align: center;
+}
+
+.nxos-notif-center-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.nxos-notif-center-msg {
+  color: #000;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.nxos-notif-center-time {
+  color: #808080;
+  font-size: 0.4rem;
+  margin-top: 1px;
+}
+
+/* ─── Systray Bell Button ───────────────────────────────────────── */
+.nxos-systray-bell {
+  background: none;
+  border: none;
+  font-size: 0.6rem;
+  cursor: pointer;
+  padding: 0 2px;
+  position: relative;
+  font-family: inherit;
+  line-height: 1;
+}
+
+.nxos-systray-bell:hover {
+  background: rgba(0,0,0,0.1);
+}
+
+.nxos-bell-badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background: #ff0000;
+  color: #fff;
+  font-size: 0.35rem;
+  font-weight: bold;
+  min-width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   VISUAL PUZZLE STYLES
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── Neural Network ────────────────────────────────────────────── */
+.nxos-nn-puzzle { padding: 6px; }
+.nxos-nn-desc { font-size: 0.5rem; color: #404040; text-align: center; margin-bottom: 6px; }
+.nxos-nn-grid { display: flex; justify-content: space-around; gap: 8px; margin-bottom: 6px; }
+.nxos-nn-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.nxos-nn-label { font-size: 0.45rem; font-weight: bold; color: #000080; margin-bottom: 2px; }
+.nxos-nn-node {
+  padding: 4px 8px; font-size: 0.5rem; border: 2px solid #808080;
+  border-radius: 3px; cursor: pointer; text-align: center; min-width: 50px;
+  background: #f0f0f0; transition: all 0.15s;
+}
+.nxos-nn-node.input { background: #e0ffe0; border-color: #408040; }
+.nxos-nn-node.node-hidden { background: #f0f0ff; border-color: #4040a0; }
+.nxos-nn-node.node-hidden.active { background: #c0c0ff; border-color: #000080; font-weight: bold; }
+.nxos-nn-node.output { background: #fff0e0; border-color: #a06000; cursor: default; }
+.nxos-nn-node:hover { transform: scale(1.05); }
+.nxos-nn-hint { font-size: 0.4rem; color: #808080; text-align: center; }
+
+/* ─── Pattern Match ─────────────────────────────────────────────── */
+.nxos-pattern-puzzle { padding: 6px; }
+.nxos-pattern-corrupted { background: #1a0000; color: #ff4444; padding: 6px; margin-bottom: 6px; border: 1px solid #ff0000; }
+.nxos-pattern-corrupted pre { font-size: 0.6rem; margin: 0; font-family: 'Courier New', monospace; }
+.nxos-pattern-label { font-size: 0.5rem; font-weight: bold; color: #000080; margin-bottom: 4px; }
+.nxos-pattern-options { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.nxos-pattern-option {
+  padding: 4px; background: #f8f8f8; border: 2px solid #c0c0c0;
+  cursor: pointer; position: relative; transition: all 0.15s;
+}
+.nxos-pattern-option:hover { border-color: #000080; background: #f0f0ff; }
+.nxos-pattern-option.selected { border-color: #008000; background: #e0ffe0; box-shadow: 0 0 4px #00800080; }
+.nxos-pattern-option pre { font-size: 0.5rem; margin: 0; font-family: 'Courier New', monospace; }
+.nxos-pattern-num { position: absolute; top: 2px; right: 4px; font-size: 0.4rem; color: #808080; }
+
+/* ─── Node Connection ───────────────────────────────────────────── */
+.nxos-node-puzzle { padding: 6px; text-align: center; }
+.nxos-node-grid { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-bottom: 6px; }
+.nxos-node-item {
+  padding: 6px 10px; font-size: 0.5rem; border: 2px solid #808080;
+  border-radius: 4px; cursor: pointer; background: #f0f0f0;
+  position: relative; transition: all 0.15s; min-width: 60px;
+}
+.nxos-node-item:hover { border-color: #000080; background: #e0e0ff; }
+.nxos-node-item.clicked { background: #000080; color: #fff; border-color: #4040ff; }
+.nxos-node-order {
+  position: absolute; top: -6px; left: -6px; background: #ff0000; color: #fff;
+  font-size: 0.4rem; width: 14px; height: 14px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-weight: bold;
+}
+.nxos-node-name { font-weight: bold; }
+
+/* ─── Sorting ───────────────────────────────────────────────────── */
+.nxos-sort-puzzle { padding: 4px; }
+.nxos-sort-item {
+  display: flex; align-items: center; gap: 4px; padding: 3px 4px;
+  background: #f4f4f4; border: 1px solid #d0d0d0; margin-bottom: 2px;
+  font-size: 0.5rem; transition: background 0.15s;
+}
+.nxos-sort-item:hover { background: #e0e0ff; }
+.nxos-sort-pos { font-weight: bold; color: #000080; width: 16px; }
+.nxos-sort-label { flex: 1; }
+.nxos-sort-btns { display: flex; gap: 1px; }
+
+/* ─── Logic Grid ────────────────────────────────────────────────── */
+.nxos-logic-puzzle { padding: 6px; text-align: center; }
+.nxos-logic-question {
+  font-size: 0.5rem; text-align: left; background: #f0f0f0; padding: 6px;
+  border: 1px solid #c0c0c0; margin-bottom: 6px; white-space: pre-wrap;
+  font-family: 'Courier New', monospace;
+}
+.nxos-logic-options { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+.nxos-logic-selected { background: #000080 !important; color: #fff !important; }
+
+/* ─── Pathfinding ───────────────────────────────────────────────── */
+.nxos-path-puzzle { padding: 6px; text-align: center; }
+.nxos-path-grid { display: inline-flex; flex-direction: column; margin-bottom: 4px; border: 2px solid #808080; }
+.nxos-path-row { display: flex; }
+.nxos-path-cell {
+  width: 32px; height: 32px; border: 1px solid #c0c0c0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.5rem; cursor: pointer; background: #fff; transition: background 0.15s;
+}
+.nxos-path-cell:hover { background: #e0e0ff; }
+.nxos-path-cell.wall { background: #404040; cursor: default; }
+.nxos-path-cell.start { background: #c0ffc0; }
+.nxos-path-cell.end { background: #ffc0c0; }
+.nxos-path-cell.active { background: #8080ff; color: #fff; font-weight: bold; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   MEETING WINDOW
+   ═══════════════════════════════════════════════════════════════════ */
+.nxos-meeting-overlay {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center; z-index: 300;
+}
+.nxos-meeting-dialog {
+  width: 380px; background: #e0e0e0;
+  border: 2px solid; border-color: #fff #808080 #808080 #fff;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+}
+.nxos-meeting-body { padding: 8px; }
+.nxos-meeting-progress { height: 8px; background: #c0c0c0; border: 1px solid #808080; margin-bottom: 6px; }
+.nxos-meeting-bar { height: 100%; background: linear-gradient(90deg, #008000, #40c040); transition: width 0.3s; }
+.nxos-meeting-round { font-size: 0.45rem; color: #808080; text-align: center; margin-bottom: 4px; }
+.nxos-meeting-speaker { font-size: 0.6rem; font-weight: bold; color: #000080; margin-bottom: 2px; }
+.nxos-meeting-text { font-size: 0.55rem; color: #404040; font-style: italic; margin-bottom: 8px; padding: 4px; background: #f8f8f8; border: 1px solid #e0e0e0; }
+.nxos-meeting-choices { display: flex; flex-direction: column; gap: 3px; }
+.nxos-meeting-choice {
+  padding: 4px 8px; font-size: 0.5rem; cursor: pointer;
+  border: 2px solid; border-color: #fff #808080 #808080 #fff;
+  background: #e0e0e0; text-align: left; transition: all 0.1s;
+}
+.nxos-meeting-choice:hover { background: #d0d0ff; border-color: #000080; }
+.nxos-meeting-choice.productive:hover { background: #d0ffd0; border-color: #006000; }
+.nxos-meeting-choice.escape:hover { background: #ffe0e0; border-color: #800000; }
+.nxos-meeting-choice.honest:hover { background: #ffe0d0; border-color: #804000; }
+
+/* ─── Meeting Alert Bar ─────────────────────────────────────────── */
+.nxos-meeting-alert {
+  position: absolute; top: 0; left: 0; right: 0;
+  background: #ffd700; border-bottom: 2px solid #b8860b;
+  z-index: 200; padding: 3px 6px;
+  animation: nxos-flash 0.5s ease-in-out infinite alternate;
+}
+@keyframes nxos-flash { from { opacity: 0.8; } to { opacity: 1; } }
+.nxos-meeting-alert-item {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.55rem; font-weight: bold;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SLACK POPUP
+   ═══════════════════════════════════════════════════════════════════ */
+.nxos-slack-popup {
+  position: absolute; bottom: 38px; left: 10px;
+  width: 240px; background: #f8f4ff;
+  border: 2px solid; border-color: #fff #808080 #808080 #fff;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.2); z-index: 210;
+  animation: nxos-slack-slide 0.2s ease-out;
+}
+@keyframes nxos-slack-slide { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.nxos-slack-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 3px 6px; background: #4A154B; color: #fff;
+  font-size: 0.5rem; font-weight: bold;
+}
+.nxos-slack-close {
+  background: none; border: none; color: #fff; cursor: pointer;
+  font-size: 0.5rem; padding: 0 2px; opacity: 0.7;
+}
+.nxos-slack-close:hover { opacity: 1; }
+.nxos-slack-body { padding: 6px; font-size: 0.5rem; color: #000; line-height: 1.4; }
+.nxos-slack-actions { display: flex; gap: 4px; padding: 4px 6px; justify-content: flex-end; }
+.nxos-slack-reply-area { padding: 4px 6px 6px; border-top: 1px solid #ddd; }
+.nxos-slack-quick-replies {
+  display: flex; flex-wrap: wrap; gap: 2px; margin-bottom: 4px;
+}
+.nxos-slack-quick-btn {
+  font-size: 0.4rem; padding: 1px 4px; cursor: pointer;
+  background: #e8e0f0; border: 1px solid #c0b0d0; border-radius: 3px;
+  color: #4A154B; white-space: nowrap;
+}
+.nxos-slack-quick-btn:hover { background: #4A154B; color: #fff; }
+.nxos-slack-reply-row {
+  display: flex; gap: 3px; align-items: center;
+}
+.nxos-slack-reply-input {
+  flex: 1; height: 18px; font-size: 0.5rem;
+  padding: 1px 4px; border: 1px inset #808080;
+  font-family: inherit; outline: none;
+}
+.nxos-slack-reply-input:focus { border-color: #4A154B; }
+.nxos-urgent-badge {
+  background: #ff0000; color: #fff; font-size: 0.4rem; font-weight: bold;
+  width: 12px; height: 12px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   REALISM EVENT POPUP
+   ═══════════════════════════════════════════════════════════════════ */
+.nxos-event-popup {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 280px; background: #fffde0;
+  border: 3px solid; border-color: #fff #808080 #808080 #fff;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.3); z-index: 280;
+  padding: 0;
+}
+.nxos-event-title {
+  padding: 4px 8px; background: linear-gradient(90deg, #c0c000, #e0e000);
+  font-size: 0.6rem; font-weight: bold; color: #000;
+  border-bottom: 1px solid #a0a000;
+}
+.nxos-event-text { padding: 8px; font-size: 0.5rem; color: #404040; line-height: 1.4; }
+.nxos-event-actions { display: flex; gap: 4px; padding: 4px 8px 8px; justify-content: center; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   TERMINAL APP
+   ═══════════════════════════════════════════════════════════════════ */
+.nxos-terminal {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #0c0c0c;
+  cursor: text;
+}
+
+.nxos-terminal-output {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px;
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 0.55rem;
+  line-height: 1.4;
+}
+
+.nxos-term-line { white-space: pre-wrap; }
+.nxos-term-line.system { color: #00aa00; }
+.nxos-term-line.input { color: #cccccc; }
+.nxos-term-line.output { color: #33ff33; }
+.nxos-term-line.error { color: #ff4444; }
+
+.nxos-terminal-input-row {
+  display: flex;
+  align-items: center;
+  padding: 2px 6px 4px;
+  background: #0c0c0c;
+  border-top: 1px solid #222;
+}
+
+.nxos-term-prompt {
+  color: #cccccc;
+  font-family: 'Courier New', monospace;
+  font-size: 0.55rem;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+
+.nxos-terminal-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #33ff33;
+  font-family: 'Courier New', monospace;
+  font-size: 0.55rem;
+  caret-color: #33ff33;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   COMBO INDICATOR
+   ═══════════════════════════════════════════════════════════════════ */
+.nxos-combo-indicator {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  z-index: 200;
+  text-align: center;
+  animation: comboSlideIn 0.3s ease-out, comboPulse 0.5s ease-in-out infinite alternate, comboFadeOut 0.5s 1.5s ease-in forwards;
+  pointer-events: none;
+}
+
+.nxos-combo-count {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #ff6600;
+  text-shadow:
+    0 0 10px rgba(255, 102, 0, 0.8),
+    0 0 20px rgba(255, 102, 0, 0.4),
+    2px 2px 0 #000;
+  font-family: 'Impact', 'Arial Black', sans-serif;
+}
+
+.nxos-combo-label {
+  font-size: 0.6rem;
+  color: #ffcc00;
+  font-weight: bold;
+  text-shadow: 1px 1px 0 #000;
+}
+
+@keyframes comboSlideIn {
+  from { transform: translateY(-50%) translateX(40px) scale(1.5); opacity: 0; }
+  to { transform: translateY(-50%) translateX(0) scale(1); opacity: 1; }
+}
+
+@keyframes comboPulse {
+  from { transform: translateY(-50%) scale(1); }
+  to { transform: translateY(-50%) scale(1.1); }
+}
+
+@keyframes comboFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ACHIEVEMENT POPUP
+   ═══════════════════════════════════════════════════════════════════ */
+.nxos-achievement-popup {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 300;
+  animation: achieveSlideDown 0.5s ease-out, achieveFadeOut 0.8s 3s ease-in forwards;
+  pointer-events: none;
+}
+
+.nxos-achievement-inner {
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  border: 2px solid #e2b714;
+  border-radius: 4px;
+  padding: 8px 16px;
+  text-align: center;
+  box-shadow:
+    0 0 15px rgba(226, 183, 20, 0.4),
+    0 4px 20px rgba(0, 0, 0, 0.6);
+  min-width: 200px;
+}
+
+.nxos-achievement-title {
+  font-size: 0.45rem;
+  letter-spacing: 3px;
+  color: #e2b714;
+  margin-bottom: 4px;
+  font-weight: bold;
+}
+
+.nxos-achievement-name {
+  font-size: 0.85rem;
+  color: #fff;
+  font-weight: 900;
+  margin-bottom: 2px;
+}
+
+.nxos-achievement-desc {
+  font-size: 0.5rem;
+  color: #aaa;
+}
+
+@keyframes achieveSlideDown {
+  from { transform: translateX(-50%) translateY(-30px); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+@keyframes achieveFadeOut {
+  from { opacity: 1; transform: translateX(-50%) translateY(0); }
+  to { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BOSS ALERT OVERLAY
+   ═══════════════════════════════════════════════════════════════════ */
+.nxos-boss-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 500;
+  background: rgba(200, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: bossFlash 0.3s ease-in-out infinite alternate;
+}
+
+.nxos-boss-inner {
+  background: linear-gradient(135deg, #2a0000, #4a0000);
+  border: 3px solid #ff0000;
+  border-radius: 4px;
+  padding: 16px 24px;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+  animation: bossShake 0.1s linear infinite;
+}
+
+.nxos-boss-icon {
+  font-size: 2rem;
+  animation: bossSpin 0.5s linear infinite;
+}
+
+.nxos-boss-title {
+  font-size: 1.2rem;
+  color: #ff4444;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+  margin: 4px 0;
+}
+
+.nxos-boss-desc {
+  font-size: 0.55rem;
+  color: #ffaaaa;
+  margin-bottom: 4px;
+}
+
+.nxos-boss-timer {
+  font-size: 1.8rem;
+  color: #ff0000;
+  font-weight: 900;
+  font-family: 'Courier New', monospace;
+  text-shadow: 0 0 15px rgba(255, 0, 0, 0.9);
+}
+
+@keyframes bossFlash {
+  from { background: rgba(200, 0, 0, 0.1); }
+  to { background: rgba(200, 0, 0, 0.25); }
+}
+
+@keyframes bossShake {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-2px, 1px); }
+  50% { transform: translate(2px, -1px); }
+  75% { transform: translate(-1px, 2px); }
+  100% { transform: translate(1px, -2px); }
+}
+
+@keyframes bossSpin {
+  from { transform: rotate(-10deg); }
+  to { transform: rotate(10deg); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   XP / LEVEL DISPLAY IN SYSTRAY
+   ═══════════════════════════════════════════════════════════════════ */
+.nxos-xp-display {
+  background: linear-gradient(90deg, #000080, #0000aa);
+  color: #fff !important;
+  padding: 0 4px;
+  border-radius: 2px;
+  font-weight: bold;
+  font-size: 0.5rem !important;
+  border: 1px solid #4040ff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ENHANCED SCREEN EFFECTS
+   ═══════════════════════════════════════════════════════════════════ */
+.nxos-desktop.burnout-high {
+  animation: screenGlitch 2s infinite;
+}
+
+.nxos-desktop.burnout-critical {
+  animation: screenGlitch 0.5s infinite, screenNoise 0.3s steps(5) infinite;
+}
+
+@keyframes screenGlitch {
+  0%, 95%, 100% { transform: none; filter: none; }
+  96% { transform: translate(-2px, 1px) skewX(0.5deg); filter: hue-rotate(90deg); }
+  97% { transform: translate(2px, -1px); filter: saturate(2); }
+  98% { transform: translate(-1px, 0); filter: hue-rotate(-45deg); }
+}
+
+@keyframes screenNoise {
+  0% { filter: brightness(1) contrast(1); }
+  20% { filter: brightness(1.1) contrast(0.9); }
+  40% { filter: brightness(0.9) contrast(1.1); }
+  60% { filter: brightness(1.05) contrast(1.05); }
+  80% { filter: brightness(0.95) contrast(0.95); }
+  100% { filter: brightness(1) contrast(1); }
+}
+
+/* ─── Screen Shake (for boss alert, big events) ────────────────── */
+.nxos-screen-shake {
+  animation: screenShake 0.15s linear infinite;
+}
+
+@keyframes screenShake {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-3px, 2px); }
+  50% { transform: translate(3px, -2px); }
+  75% { transform: translate(-2px, 3px); }
+  100% { transform: translate(2px, -3px); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RIGHT-CLICK CONTEXT MENU
+   ═══════════════════════════════════════════════════════════════════ */
+.nxos-context-menu {
+  position: fixed;
+  z-index: 9999;
+  min-width: 150px;
+  background: #c0c0c0;
+  border: 2px outset #dfdfdf;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+  padding: 2px;
+  font-size: 0.55rem;
+}
+
+.nxos-ctx-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.nxos-ctx-item:hover {
+  background: #000080;
+  color: #fff;
+}
+
+.nxos-ctx-key {
+  width: 14px;
+  text-align: center;
+  font-size: 0.5rem;
+}
+
+.nxos-ctx-shortcut {
+  margin-left: auto;
+  color: #808080;
+  font-size: 0.45rem;
+}
+
+.nxos-ctx-item:hover .nxos-ctx-shortcut {
+  color: #c0c0ff;
+}
+
+.nxos-ctx-divider {
+  height: 1px;
+  margin: 2px 4px;
+  background: #808080;
+  border-bottom: 1px solid #fff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   HOW TO PLAY / TUTORIAL DIALOG
+   ═══════════════════════════════════════════════════════════════════ */
+.nxos-tutorial-dialog {
+  position: relative;
+  width: 480px;
+  max-width: 90vw;
+  max-height: 85vh;
+  background: #c0c0c0;
+  border: 2px outset #dfdfdf;
+  box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
+  animation: tutorialSlideIn 0.3s ease-out;
+}
+
+@keyframes tutorialSlideIn {
+  from { transform: scale(0.8) translateY(20px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.nxos-tutorial-body {
+  padding: 12px;
+  overflow-y: auto;
+  max-height: calc(85vh - 30px);
+}
+
+.nxos-tutorial-title {
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #000080;
+  text-align: center;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #000080;
+}
+
+.nxos-tutorial-page {
+  font-size: 0.55rem;
+  line-height: 1.5;
+  color: #000;
+}
+
+.nxos-tut-intro {
+  font-size: 0.6rem;
+  text-align: center;
+  margin-bottom: 10px;
+  padding: 8px;
+  background: #fffff0;
+  border: 1px solid #c0c090;
+}
+
+.nxos-tut-section {
+  margin-bottom: 10px;
+}
+
+.nxos-tut-heading {
+  font-size: 0.55rem;
+  font-weight: bold;
+  color: #000080;
+  border-bottom: 1px solid #808080;
+  padding-bottom: 2px;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+
+.nxos-tut-list {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.nxos-tut-list li {
+  margin-bottom: 3px;
+}
+
+.nxos-tut-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 10px;
+  font-size: 0.5rem;
+  padding: 4px;
+  background: #fff;
+  border: 1px inset #808080;
+}
+
+.nxos-tut-grid.shortcuts {
+  gap: 3px 12px;
+}
+
+.nxos-tut-key {
+  font-family: 'Courier New', monospace;
+  background: #e8e8e8;
+  border: 1px outset #c0c0c0;
+  padding: 1px 4px;
+  font-size: 0.45rem;
+  text-align: center;
+  font-weight: bold;
+}
+
+.nxos-tut-ready {
+  text-align: center;
+  padding: 10px;
+  margin-top: 8px;
+  background: #f0fff0;
+  border: 1px solid #90c090;
+  font-size: 0.55rem;
+}
+
+.nxos-tutorial-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #808080;
+}
+
+.nxos-tutorial-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.nxos-tut-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #808080;
+  transition: background 0.2s;
+}
+
+.nxos-tut-dot.active {
+  background: #000080;
+}
+
+/* Allow text selection in window content areas for copy/paste */
+.nxos-window-content {
+  user-select: text;
+}
+.nxos-notepad-area {
+  user-select: text;
+}
+.nxos-terminal-input {
+  user-select: text;
+}
+.nxos-puzzle-input {
+  user-select: text;
+}
+.nxos-terminal-output {
+  user-select: text;
+}
+.nxos-email-body {
+  user-select: text;
+}
+.nxos-browser-page {
+  user-select: text;
+}
+.nxos-doc-preview {
+  user-select: text;
+}

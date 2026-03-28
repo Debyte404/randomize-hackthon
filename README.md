@@ -160,16 +160,26 @@ VITE_GEMINI_API_KEY=your_api_key_here
 
 ---
 
-## Deployment
+---
 
-The game is a static web build — deploy anywhere:
-- [itch.io](https://itch.io) (primary target)
-- Vercel / Netlify / GitHub Pages
-- Any static file host
+## Production Deployment (Root Config)
+
+This repository is pre-configured for automated deployment to Vercel and Render using root-level configurations that point to the `production/` directory.
+
+- **Vercel**: Connect this repository to Vercel. It will automatically use the root `vercel.json` to build the `production/` folder and server from `production/dist`.
+- **Render**: Connect the repository to Render. Use `npm run build` as the build command.
+- **Manual Build**: Run `npm run build` at the root to build the production site.
+- **itch.io**: Run `npm run zip-itch` to generate a ZIP file in `production/` for manual upload.
 
 ```bash
-npm run build  # outputs to dist/
+# Production Commands (from Root)
+npm install         # Installs root helper
+npm run install-prod # Installs production dependencies
+npm run build        # Builds the project
+npm run zip-itch     # Packages for itch.io
 ```
+
+---
 
 ---
 

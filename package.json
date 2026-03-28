@@ -1,0 +1,12 @@
+{
+  "name": "nexusos-root",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "npm run dev --prefix production",
+    "build": "npm run build --prefix production",
+    "postinstall": "npm install --prefix production",
+    "install-prod": "npm install --prefix production",
+    "zip-itch": "npm run zip-itch --prefix production"
+  }
+}
