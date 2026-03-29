@@ -59,7 +59,7 @@ export default function Game3D() {
     const renderPass = new RenderPass(scene, camera);
     composer.addPass(renderPass);
     // Aesthetic Retro Bloom
-    const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2), 0.4, 0.4, 0.9);
+    const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2), 0.3, 0.3, 1.2);
     composer.addPass(bloomPass);
 
     const pixelPass = new PixelationPass(2.0);
@@ -120,33 +120,25 @@ export default function Game3D() {
 
     // Trigger handler
     triggerHandler = (id) => {
+      // Generic dialogue triggers — if a dialogue entry exists, play it
+      const dialogueEntry = DIALOGUE[id];
+      if (dialogueEntry && !['door', 'hallway', 'sit', 'yourDesk'].includes(id)) {
+        player.disable();
+        dialogue.play(dialogueEntry, () => {
+          player.enable();
+        });
+        return;
+      }
+
       switch (id) {
         case 'door':
           ctx.transitionTo('lobby');
-          break;
-        case 'receptionist':
-          player.disable();
-          dialogue.play(DIALOGUE.receptionist, () => {
-            player.enable();
-          });
           break;
         case 'hallway':
           ctx.transitionTo('interview');
           break;
         case 'sit':
           interviewScene.onSitDown(ctx);
-          break;
-        case 'coworkerPrinter':
-          player.disable();
-          dialogue.play(DIALOGUE.coworkerPrinter, () => {
-            player.enable();
-          });
-          break;
-        case 'coworkerDesk':
-          player.disable();
-          dialogue.play(DIALOGUE.coworkerDesk, () => {
-            player.enable();
-          });
           break;
         case 'yourDesk':
           ctx.transitionTo('desk');

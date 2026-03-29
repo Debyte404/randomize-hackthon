@@ -11,7 +11,21 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #1a1a1a;
+  background:
+    /* Subtle light from top-right */
+    radial-gradient(ellipse 60% 40% at 75% 10%, rgba(255,255,255,0.4) 0%, transparent 70%),
+    /* Wall to desk surface */
+    linear-gradient(180deg,
+      #e8e6e1 0%,        /* warm white wall */
+      #e2e0db 40%,       /* slightly darker lower wall */
+      #d5d2cc 62%,       /* wall shadow near desk */
+      #c8c0b4 65%,       /* desk edge shadow */
+      #c4a87a 67%,       /* light wood grain start */
+      #b89b6a 72%,       /* warm wood */
+      #a88d5e 80%,       /* mid wood tone */
+      #9e8455 90%,       /* darker wood edge */
+      #8c7548 100%       /* desk front edge */
+    );
   font-family: 'MS Sans Serif', 'Tahoma', 'Segoe UI', 'Arial', sans-serif;
   user-select: none;
 }

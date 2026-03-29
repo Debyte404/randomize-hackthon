@@ -10,9 +10,10 @@ export class TriggerZone {
     this.isPlayerInside = false;
 
     const half = config.size.clone().multiplyScalar(0.5);
+    // Expand the Y size bounds massively so player's camera height doesn't easily miss the box
     this.box = new THREE.Box3(
-      config.position.clone().sub(half),
-      config.position.clone().add(half)
+      config.position.clone().sub(half).setY(-10),
+      config.position.clone().add(half).setY(10)
     );
   }
 
