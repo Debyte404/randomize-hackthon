@@ -74,6 +74,7 @@ export class PlayerController {
 
   disable() {
     this.enabled = false;
+    this.unlock();
     this.velocity.set(0, 0, 0);
     this.bobAmount = 0;
     this.targetBobAmount = 0;

@@ -100,7 +100,10 @@ export default function Game3D() {
         sm.transitionTo(name);
       },
       setFade: setFadeOpacity,
-      showChoice: (options, onSelect) => setChoiceState({ options, onSelect }),
+      showChoice: (options, onSelect) => {
+        player.unlock();
+        setChoiceState({ options, onSelect });
+      },
       hideChoice: () => setChoiceState(null),
       showNarrator: (text) => setNarratorText(text),
       hideNarrator: () => setNarratorText(null),
