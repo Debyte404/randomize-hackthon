@@ -218,33 +218,33 @@ export class InterviewScene {
     // Phase machine
     switch (this.phase) {
       case 'entering':
-        if (this.phaseTimer > 2.0) {
+        if (this.phaseTimer > 0.8) {
           this.phase = 'sitting';
           this.phaseTimer = 0;
           ctx.hideNarrator();
           ctx.showNarrator('Two interviewers stare at you from across the table.');
           this.targetCameraPos.copy(this.seatPos);
           this.targetLookAt.copy(this.lookAtInterviewer1);
-          this.cameraLerpSpeed = 1.5;
+          this.cameraLerpSpeed = 2.5;
         }
         break;
 
       case 'sitting':
-        if (this.phaseTimer > 2.5) {
+        if (this.phaseTimer > 1.0) {
           this.phase = 'settled';
           this.phaseTimer = 0;
           ctx.hideNarrator();
           this.targetLookAt.set(0, 2.2, -5); // Look at whiteboard
-          this.cameraLerpSpeed = 1.0;
+          this.cameraLerpSpeed = 1.5;
         }
         break;
 
       case 'settled':
-        if (this.phaseTimer > 0.8) {
+        if (this.phaseTimer > 0.4) {
           this.targetLookAt.copy(this.lookAtInterviewer1);
-          this.cameraLerpSpeed = 2.0;
+          this.cameraLerpSpeed = 2.5;
         }
-        if (this.phaseTimer > 2.0) {
+        if (this.phaseTimer > 1.0) {
           this.phase = 'dialogue_start';
           this.phaseTimer = 0;
           this.cutToSpeaker(1);

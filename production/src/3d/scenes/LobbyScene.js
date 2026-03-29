@@ -291,8 +291,8 @@ export class LobbyScene {
     waterSign.position.set(-9, 0.7, -4.83);
     ctx.scene.add(waterSign);
 
-    // Player start
-    ctx.player.camera.position.set(0, 1.7, 8);
+    // Player start — already inside, near reception
+    ctx.player.camera.position.set(0, 1.7, 3);
     ctx.player.enable();
 
     // Triggers

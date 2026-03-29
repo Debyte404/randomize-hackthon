@@ -119,8 +119,8 @@ export class OfficeScene {
       ctx.scene.add(cup);
     }
 
-    // Player start
-    ctx.player.camera.position.set(0, 1.7, 18);
+    // Player start — drop them near the desk area, not the far end
+    ctx.player.camera.position.set(0, 1.7, 14);
     ctx.player.enable();
 
     // Trigger for your desk

@@ -6,6 +6,8 @@ import {
 export class StreetScene {
   constructor() {
     this.name = 'street';
+    this.hintShown = false;
+    this.hintTimer = 0;
   }
 
   setup(ctx) {
@@ -360,12 +362,11 @@ export class StreetScene {
     ctx.scene.add(createBox(3, 2.5, 0.1, 0x223344, [3, 1.25, 4.7])); // back wall (glass/dark)
     ctx.scene.add(createBox(2, 0.1, 0.6, 0x664422, [3, 0.5, 4.3])); // bench
 
-    // Bus stop shelter
-    ctx.scene.add(createBox(3, 0.1, 1.5, 0x333333, [3, 2.5, 4])); // roof
-    ctx.scene.add(createBox(0.1, 2.5, 0.1, 0x555555, [1.6, 1.25, 3.3])); // pole FL
-    ctx.scene.add(createBox(0.1, 2.5, 0.1, 0x555555, [4.4, 1.25, 3.3])); // pole FR
-    ctx.scene.add(createBox(3, 2.5, 0.1, 0x223344, [3, 1.25, 4.7])); // back wall (glass/dark)
-    ctx.scene.add(createBox(2, 0.1, 0.6, 0x664422, [3, 0.5, 4.3])); // bench
+    // Carving on bench — "TURN BACK" scratched into the wood
+    const benchCarving = createTextSign('TURN BACK', 0.6, 0.12, '#664422', '#3a2a1a', 16);
+    benchCarving.position.set(3, 0.56, 4.0);
+    benchCarving.rotation.x = -Math.PI / 2;
+    ctx.scene.add(benchCarving);
 
     // --- SIDEWALK DETAIL ---
     // Fire hydrant
@@ -376,8 +377,8 @@ export class StreetScene {
     ctx.scene.add(createBox(0.4, 0.8, 0.3, 0x2244aa, [-3, 0.4, 2]));
     ctx.scene.add(createBox(0.38, 0.02, 0.28, 0x336699, [-3, 0.81, 2])); // top
 
-    // Player start position
-    ctx.player.camera.position.set(0, 1.7, 3);
+    // Player start position — close to door so street is a glimpse, not a trek
+    ctx.player.camera.position.set(0, 1.7, -3);
     ctx.player.enable();
 
     // Door trigger
@@ -387,6 +388,42 @@ export class StreetScene {
       size: new THREE.Vector3(2, 3, 1.5),
       once: true,
       autoTrigger: true,
+    });
+
+    // Interactive triggers — trash can with resumes
+    ctx.triggers.add({
+      id: 'trashResumes',
+      position: new THREE.Vector3(2.5, 0.5, -7),
+      size: new THREE.Vector3(1.5, 2, 1.5),
+      once: true,
+      promptText: '[E] Examine Trash',
+    });
+
+    // Hiring poster
+    ctx.triggers.add({
+      id: 'hiringPoster',
+      position: new THREE.Vector3(-2.8, 1.6, -7.5),
+      size: new THREE.Vector3(2, 2, 1.5),
+      once: true,
+      promptText: '[E] Read Poster',
+    });
+
+    // Newspaper box
+    ctx.triggers.add({
+      id: 'newspaperBox',
+      position: new THREE.Vector3(-3, 0.5, 2),
+      size: new THREE.Vector3(1.5, 2, 1.5),
+      once: true,
+      promptText: '[E] Read Headline',
+    });
+
+    // Bus stop bench
+    ctx.triggers.add({
+      id: 'busStop',
+      position: new THREE.Vector3(3, 1, 4),
+      size: new THREE.Vector3(3, 2, 2),
+      once: true,
+      promptText: '[E] Examine Bench',
     });
 
     // Colliders
@@ -400,9 +437,19 @@ export class StreetScene {
     ]);
   }
 
-  update(_delta, _ctx) {
-    // Nothing dynamic in this scene
+  update(_delta, ctx) {
+    if (!this.hintShown) {
+      this.hintTimer = (this.hintTimer || 0) + _delta;
+      if (this.hintTimer > 2.0) {
+        this.hintShown = true;
+        ctx.showNarrator('LOOK AROUND. EXPLORE. PRESS [E] TO INTERACT.');
+        setTimeout(() => ctx.hideNarrator(), 4000);
+      }
+    }
   }
 
-  cleanup() {}
+  cleanup() {
+    this.hintShown = false;
+    this.hintTimer = 0;
+  }
 }

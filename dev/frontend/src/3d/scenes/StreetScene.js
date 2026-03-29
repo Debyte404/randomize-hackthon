@@ -377,8 +377,8 @@ export class StreetScene {
     ctx.scene.add(createBox(0.4, 0.8, 0.3, 0x2244aa, [-3, 0.4, 2]));
     ctx.scene.add(createBox(0.38, 0.02, 0.28, 0x336699, [-3, 0.81, 2])); // top
 
-    // Player start position
-    ctx.player.camera.position.set(0, 1.7, 3);
+    // Player start position — close to door so street is a glimpse, not a trek
+    ctx.player.camera.position.set(0, 1.7, -3);
     ctx.player.enable();
 
     // Door trigger
