@@ -278,10 +278,106 @@ export const generatePuzzle = () => {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// 100 UNIQUE OFFLINE TASK TEMPLATES
+// PROCEDURAL RANDOM TASK GENERATOR — 500+ unique combinations
 // ═══════════════════════════════════════════════════════════════════
-export const OFFLINE_TASKS = [
-  // ─── Frontend Tasks (1-25) ─────────────────────────────────────
+
+// Building blocks for procedural task generation
+const TASK_VERBS = [
+  'Fix', 'Debug', 'Refactor', 'Optimize', 'Implement', 'Add', 'Update',
+  'Remove', 'Migrate', 'Rewrite', 'Patch', 'Resolve', 'Investigate',
+  'Configure', 'Deploy', 'Test', 'Document', 'Review', 'Upgrade',
+  'Redesign', 'Integrate', 'Validate', 'Monitor', 'Automate',
+  'Deprecate', 'Rollback', 'Benchmark', 'Audit', 'Secure', 'Scale',
+]
+
+const TASK_OBJECTS = [
+  'login form validation', 'user authentication flow', 'dashboard widgets',
+  'payment processing module', 'search indexing service', 'notification system',
+  'WebSocket connection handler', 'file upload pipeline', 'caching layer',
+  'database connection pool', 'API rate limiter', 'session management',
+  'email delivery queue', 'image compression service', 'PDF generator',
+  'OAuth2 integration', 'GraphQL resolver', 'REST endpoint',
+  'CI/CD pipeline', 'Docker container config', 'Kubernetes deployment',
+  'load balancer rules', 'SSL certificate renewal', 'DNS configuration',
+  'monitoring dashboard', 'log aggregation service', 'backup scheduler',
+  'data migration script', 'user permissions system', 'analytics tracker',
+  'A/B testing framework', 'feature flag service', 'error tracking module',
+  'CDN cache invalidation', 'microservice mesh', 'message queue consumer',
+  'batch processing job', 'webhook delivery system', 'SSO provider',
+  'two-factor auth module', 'password hashing service', 'rate throttle middleware',
+  'CORS policy handler', 'input sanitization layer', 'audit logging system',
+  'health check endpoint', 'metrics exporter', 'secret rotation tool',
+  'mobile responsive layout', 'dark mode stylesheet', 'accessibility checker',
+]
+
+const TASK_CONTEXTS = [
+  'on production', 'for mobile users', 'in staging environment',
+  'for the new API v3', 'on legacy codebase', 'for enterprise clients',
+  'before the release', 'after the security audit', 'for compliance',
+  'on the admin panel', 'in the checkout flow', 'for the onboarding wizard',
+  'on the settings page', 'for third-party vendors', 'in the microservices layer',
+  'for the React frontend', 'on the Node backend', 'in the data pipeline',
+  'for the mobile app', 'on the internal tools', 'before EOD Friday',
+  'for the investor demo', 'in the monorepo', 'across all environments',
+  'for the Q4 launch', 'on the shared library', 'in the test suite',
+  'for the design system', 'on the edge servers', 'for the partner API',
+]
+
+const PRIORITIES = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']
+const PRIORITY_WEIGHTS = [0.1, 0.3, 0.35, 0.25] // weighted distribution
+
+const _pick = (arr) => arr[Math.floor(Math.random() * arr.length)]
+const _weightedPriority = () => {
+  const r = Math.random()
+  let cumulative = 0
+  for (let i = 0; i < PRIORITIES.length; i++) {
+    cumulative += PRIORITY_WEIGHTS[i]
+    if (r <= cumulative) return PRIORITIES[i]
+  }
+  return 'MEDIUM'
+}
+
+const _pointsForPriority = (priority) => {
+  const ranges = { CRITICAL: [25, 40], HIGH: [14, 25], MEDIUM: [8, 16], LOW: [4, 10] }
+  const [min, max] = ranges[priority] || [5, 15]
+  return min + Math.floor(Math.random() * (max - min + 1))
+}
+
+// Track recently generated titles to avoid immediate repeats
+const _recentTitles = new Set()
+const MAX_RECENT = 50
+
+/**
+ * Generates a unique random offline task every time it's called.
+ * Combines ~30 verbs × ~50 objects × ~30 contexts = 45,000+ possible titles.
+ */
+export const generateRandomOfflineTask = () => {
+  let title
+  let attempts = 0
+  do {
+    const verb = _pick(TASK_VERBS)
+    const obj = _pick(TASK_OBJECTS)
+    // 60% chance to include a context suffix for variety
+    const ctx = Math.random() < 0.6 ? ` ${_pick(TASK_CONTEXTS)}` : ''
+    title = `${verb} ${obj}${ctx}`
+    // Truncate to 50 chars max
+    if (title.length > 50) title = title.slice(0, 47) + '...'
+    attempts++
+  } while (_recentTitles.has(title) && attempts < 10)
+
+  // Track to avoid immediate repeats
+  _recentTitles.add(title)
+  if (_recentTitles.size > MAX_RECENT) {
+    const first = _recentTitles.values().next().value
+    _recentTitles.delete(first)
+  }
+
+  const priority = _weightedPriority()
+  return { title, priority, points: _pointsForPriority(priority) }
+}
+
+// Keep the original 100 as a seed pool (used 30% of the time for hand-crafted variety)
+const SEED_TASKS = [
   { title: 'Fix login button alignment on mobile', priority: 'HIGH', points: 15 },
   { title: 'Add loading spinner to dashboard', priority: 'LOW', points: 8 },
   { title: 'Implement dark mode toggle', priority: 'MEDIUM', points: 12 },
@@ -307,8 +403,6 @@ export const OFFLINE_TASKS = [
   { title: 'Implement multi-select checkbox filter', priority: 'MEDIUM', points: 12 },
   { title: 'Fix animation jank on page transitions', priority: 'LOW', points: 8 },
   { title: 'Add empty state illustrations', priority: 'LOW', points: 7 },
-
-  // ─── Backend Tasks (26-50) ─────────────────────────────────────
   { title: 'Fix N+1 query in user list endpoint', priority: 'CRITICAL', points: 30 },
   { title: 'Add rate limiting to auth endpoints', priority: 'HIGH', points: 22 },
   { title: 'Implement password reset email flow', priority: 'HIGH', points: 20 },
@@ -334,8 +428,6 @@ export const OFFLINE_TASKS = [
   { title: 'Fix connection pool exhaustion under load', priority: 'CRITICAL', points: 30 },
   { title: 'Implement soft delete for user accounts', priority: 'MEDIUM', points: 14 },
   { title: 'Add Prometheus metrics endpoint', priority: 'LOW', points: 10 },
-
-  // ─── DevOps Tasks (51-70) ──────────────────────────────────────
   { title: 'Fix Docker build failing on ARM chips', priority: 'HIGH', points: 18 },
   { title: 'Update CI pipeline to run lint checks', priority: 'MEDIUM', points: 12 },
   { title: 'Add staging environment deployment', priority: 'HIGH', points: 22 },
@@ -356,8 +448,6 @@ export const OFFLINE_TASKS = [
   { title: 'Add Grafana dashboard for API latency', priority: 'LOW', points: 10 },
   { title: 'Implement secrets rotation policy', priority: 'MEDIUM', points: 16 },
   { title: 'Fix GitHub Actions runner out of space', priority: 'HIGH', points: 14 },
-
-  // ─── QA / Testing Tasks (71-85) ────────────────────────────────
   { title: 'Write unit tests for auth module', priority: 'MEDIUM', points: 14 },
   { title: 'Fix flaky E2E test for checkout flow', priority: 'HIGH', points: 18 },
   { title: 'Add integration tests for payment API', priority: 'HIGH', points: 20 },
@@ -373,8 +463,6 @@ export const OFFLINE_TASKS = [
   { title: 'Write security scan automation script', priority: 'HIGH', points: 20 },
   { title: 'Fix Cypress tests breaking on CI', priority: 'HIGH', points: 18 },
   { title: 'Add performance benchmark tests', priority: 'MEDIUM', points: 14 },
-
-  // ─── Miscellaneous/Corporate Tasks (86-100) ────────────────────
   { title: 'Update README with setup instructions', priority: 'LOW', points: 5 },
   { title: 'Review and approve PR #4921', priority: 'MEDIUM', points: 10 },
   { title: 'Update privacy policy page content', priority: 'LOW', points: 6 },
@@ -391,6 +479,23 @@ export const OFFLINE_TASKS = [
   { title: 'Migrate wiki pages to Confluence', priority: 'LOW', points: 8 },
   { title: 'Archive completed Q3 sprint tickets', priority: 'LOW', points: 4 },
 ]
+
+// OFFLINE_TASKS export: 30% seed (hand-crafted), 70% procedurally generated
+// This gives a mix of polished tasks and fresh random ones
+export const OFFLINE_TASKS = SEED_TASKS
+
+/**
+ * Returns a random task — either from the seed pool or procedurally generated.
+ * Called by useWorkStore when Gemini API is unavailable.
+ */
+export const getRandomOfflineTask = () => {
+  if (Math.random() < 0.3) {
+    // 30% chance: pick from hand-crafted seed pool
+    return SEED_TASKS[Math.floor(Math.random() * SEED_TASKS.length)]
+  }
+  // 70% chance: generate a brand new random task
+  return generateRandomOfflineTask()
+}
 
 // ─── Meeting Dialogue System ─────────────────────────────────────
 export const MEETING_TEMPLATES = [
