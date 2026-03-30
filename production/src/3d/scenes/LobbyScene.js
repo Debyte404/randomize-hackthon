@@ -211,17 +211,17 @@ export class LobbyScene {
       const group = new THREE.Group();
       
       // Base
-      const base = createBox(2.2, 0.2, 0.8, 0x555555, [0, 0.1, 0]);
+      const base = createBox(2.2, 0.2, 0.8, 0x111111, [0, 0.1, 0]);
       group.add(base);
       
       // Cushions
-      const cushion1 = createBox(1.0, 0.3, 0.7, 0x888888, [-0.55, 0.35, 0]);
-      const cushion2 = createBox(1.0, 0.3, 0.7, 0x888888, [0.55, 0.35, 0]);
+      const cushion1 = createBox(1.0, 0.3, 0.7, 0x222222, [-0.55, 0.35, 0]);
+      const cushion2 = createBox(1.0, 0.3, 0.7, 0x222222, [0.55, 0.35, 0]);
       group.add(cushion1);
       group.add(cushion2);
       
       // Backrest
-      const backrest = createBox(2.2, 0.6, 0.2, 0x888888, [0, 0.6, -0.3]);
+      const backrest = createBox(2.2, 0.6, 0.2, 0x222222, [0, 0.6, -0.3]);
       group.add(backrest);
 
       group.position.set(x, 0, z);
@@ -229,9 +229,7 @@ export class LobbyScene {
       return group;
     };
     ctx.scene.add(createCouch(-6, 2, Math.PI / 2));
-    ctx.scene.add(createCouch(-4, 0, 0));
     ctx.scene.add(createCouch(6, 2, -Math.PI / 2));
-    ctx.scene.add(createCouch(4, 0, 0));
     ctx.scene.add(createBox(2.0, 0.4, 1.2, 0x0a0a0a, [0, 0.2, 1]));
 
     // --- ELEVATOR BANK ---
