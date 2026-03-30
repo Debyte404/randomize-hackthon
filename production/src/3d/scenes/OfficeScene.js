@@ -70,11 +70,13 @@ export class OfficeScene {
 
     // --- YOUR DESK ---
     // Specifically marked desk in the front-center pod
-    const yourDeskX = 0;
-    const yourDeskZ = 8;
+    const yourDeskX = -1;
+    const yourDeskZ = 11.5;
+
+    ctx.scene.add(createDesk(yourDeskX, yourDeskZ, Math.PI));
     
     const yourDeskMarker = createTextSign('YOUR DESK', 0.4, 0.15, '#115511', '#ffffff', 16);
-    yourDeskMarker.position.set(yourDeskX, 1.15, yourDeskZ - 0.1);
+    yourDeskMarker.position.set(yourDeskX, 1.15, yourDeskZ + 0.1);
     ctx.scene.add(yourDeskMarker);
 
     // Sprint board on wall (placed on actual left wall at x=-19.8)
