@@ -5,7 +5,7 @@ export class PlayerController {
     this.camera = camera;
     this.camera.position.set(0, 1.7, 0); // Eye height
     this.enabled = true;
-    this.moveSpeed = 15.0;
+    this.moveSpeed = 25.5;
     this.sprintMultiplier = 3.0;
     this.mouseSensitivity = 0.001;
     this.pitchLimit = Math.PI * 0.44;

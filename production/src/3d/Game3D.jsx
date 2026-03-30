@@ -163,7 +163,7 @@ export default function Game3D() {
 
       player.update(delta);
       dialogue.update(delta);
-      triggers.update(player.camera.position);
+      triggers.update(player.camera.position, !dialogueState.active && player.enabled);
       sm.update(delta);
 
       const prompt = triggers.getPrompt();

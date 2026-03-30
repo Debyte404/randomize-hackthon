@@ -68,18 +68,20 @@ export class TriggerManager {
     this.triggers = [];
   }
 
-  update(playerPos) {
+  update(playerPos, canInteract = true) {
     this.proximityId = null;
     this.proximityPrompt = '';
 
     for (const trigger of this.triggers) {
       trigger.check(
         playerPos,
-        this.ePressed,
+        canInteract ? this.ePressed : false,
         this.onTrigger,
         (id, prompt) => {
-          this.proximityId = id;
-          this.proximityPrompt = prompt;
+          if (canInteract) {
+            this.proximityId = id;
+            this.proximityPrompt = prompt;
+          }
         }
       );
     }
