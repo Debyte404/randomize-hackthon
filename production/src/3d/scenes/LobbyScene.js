@@ -232,6 +232,28 @@ export class LobbyScene {
     ctx.scene.add(createCouch(-4, 0, 0));
     ctx.scene.add(createCouch(6, 2, -Math.PI / 2));
     ctx.scene.add(createCouch(4, 0, 0));
+    ctx.scene.add(createBox(2.0, 0.4, 1.2, 0x0a0a0a, [0, 0.2, 1]));
+
+    // --- ELEVATOR BANK ---
+    const elevatorDoors = createBox(3.0, 3.2, 0.1, 0x8899aa, [7, 1.6, -11.9]);
+    elevatorDoors.material.metalness = 0.9;
+    elevatorDoors.material.roughness = 0.2;
+    ctx.scene.add(elevatorDoors);
+    ctx.scene.add(createBox(0.1, 3.2, 0.15, 0x333333, [7, 1.6, -11.85]));
+    ctx.scene.add(createBox(3.4, 3.4, 0.2, 0x222222, [7, 1.7, -11.95]));
+
+    const elevatorSign = createTextSign('INTERVIEWS ↓', 3.0, 0.6, '#111111', '#ffaa00', 32);
+    elevatorSign.position.set(7, 4.2, -11.9);
+    elevatorSign.material.emissive = new THREE.Color(0xffaa00);
+    elevatorSign.material.emissiveIntensity = 1.5;
+    ctx.scene.add(elevatorSign);
+
+    const elevatorSpot = new THREE.SpotLight(0xffddaa, 200, 15, Math.PI / 6, 0.5, 1);
+    elevatorSpot.position.set(7, 6, -9.5);
+    elevatorSpot.target.position.set(7, 0, -11.5);
+    ctx.scene.add(elevatorSpot);
+    ctx.scene.add(elevatorSpot.target);
+    ctx.scene.add(createBox(3.4, 0.05, 2.4, 0x551111, [7, 0.03, -10.6]));
 
     // Expensive minimalist planters
     const createLuxPlant = (x, z) => {
@@ -337,8 +359,7 @@ export class LobbyScene {
       new THREE.Box3(new THREE.Vector3(-3.5, 0, -9.5), new THREE.Vector3(3.5, 1.2, -7.5)),
       new THREE.Box3(new THREE.Vector3(4.5, 0, -12.5), new THREE.Vector3(5.5, 10, -11)),
       new THREE.Box3(new THREE.Vector3(8.5, 0, -12.5), new THREE.Vector3(9.5, 10, -11)),
-      
-      // Water cooler
+      new THREE.Box3(new THREE.Vector3(-1.0, 0, 0.4), new THREE.Vector3(1.0, 0.4, 1.6)),
       new THREE.Box3(new THREE.Vector3(-9.3, 0, -5.3), new THREE.Vector3(-8.7, 1.5, -4.7)),
     ]);
   }

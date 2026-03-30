@@ -47,6 +47,16 @@ export class DialogueSystem {
     this.showCurrentLine();
   }
 
+  stop() {
+    this.currentSequence = null;
+    this.currentLineIndex = 0;
+    this.isWaiting = false;
+    this.isTyping = false;
+    this.delayTimer = 0;
+    this.onComplete = null;
+    this.onUpdate({ active: false, npcName: '', text: '', canAdvance: false });
+  }
+
   showCurrentLine() {
     if (!this.currentSequence) return;
 

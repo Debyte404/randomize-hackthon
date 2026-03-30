@@ -35,6 +35,7 @@ export class InterviewScene {
     // Screen shake
     this.shakeIntensity = 0;
     this.shakeDecay = 3;
+    this._timeouts = [];
   }
 
   setup(ctx) {
@@ -386,7 +387,7 @@ export class InterviewScene {
 
     ctx.showNarrator(narratorText);
 
-    setTimeout(() => {
+    this._timeouts.push(setTimeout(() => {
       ctx.hideNarrator();
       this.cameraLerpSpeed = 3.0;
       this.cutToSpeaker(1);
@@ -395,10 +396,10 @@ export class InterviewScene {
         this.phaseTimer = 0;
         this.shakeIntensity = shakeIntensity;
         ctx.setFade(0.4);
-        setTimeout(() => ctx.setFade(0), 300);
+        this._timeouts.push(setTimeout(() => ctx.setFade(0), 300));
         ctx.showNarrator('...wait, that\'s it?');
 
-        setTimeout(() => {
+        this._timeouts.push(setTimeout(() => {
           ctx.hideNarrator();
           this.cutToSpeaker(2);
           this.phase = 'farewell';
@@ -407,14 +408,17 @@ export class InterviewScene {
             ctx.showNarrator('Welcome to Nexus Corp. Your desk is waiting.');
             this.phase = 'transitioning';
             this.phaseTimer = 0;
-            setTimeout(() => ctx.hideNarrator(), 2000);
+            this._timeouts.push(setTimeout(() => ctx.hideNarrator(), 2000));
           });
-        }, 2500);
+        }, 2500));
       });
-    }, pauseDuration);
+    }, pauseDuration));
   }
 
   cleanup() {
+    // Clear all pending timeouts to prevent subtitle leaks
+    this._timeouts.forEach(id => clearTimeout(id));
+    this._timeouts = [];
     this.phase = 'entering';
     this.phaseTimer = 0;
     this.totalTime = 0;

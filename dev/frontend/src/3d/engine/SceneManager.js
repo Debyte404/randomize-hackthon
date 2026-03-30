@@ -41,6 +41,11 @@ export class SceneManager {
     // Clear triggers
     this.ctx.triggers.clear();
 
+    // Clear any active dialogue, narrator, choices
+    this.ctx.dialogue.stop();
+    this.ctx.hideNarrator();
+    this.ctx.hideChoice();
+
     // Setup new scene
     const next = this.scenes.get(sceneName);
     if (!next) {
