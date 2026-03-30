@@ -768,7 +768,7 @@ const QuickOutlookContent = () => {
     <div className="nxos-outlook-list">
       {unread.length===0&&read.length===0&&<div className="nxos-outlook-empty">Inbox Zero. Enjoy the silence.</div>}
       {unread.map(email => { const rem = Math.max(0,email.expiresIn-(Date.now()-email.createdAt)/1000); return (
-        <div key={email.id} className={`nxos-email ${email.urgent?'urgent':''}`}><div className="nxos-email-hdr"><strong>{garble(email.from,burnout)}</strong>{email.urgent&&<span className="nxos-urgent-badge">!</span>}<span className="nxos-email-timer">⏱{Math.floor(rem)}s</span></div><div className="nxos-email-subject">{garble(email.subject,burnout)}</div><div className="nxos-email-body">{garble(email.body,burnout)}</div><div className="nxos-email-actions"><button className="nxos-btn" onClick={()=>{dismissEmail(email.id);playBlip()}}>OK</button><button className="nxos-btn" onClick={()=>playError()}>Ignore</button></div></div>
+        <div key={email.id} className={`nxos-email ${email.urgent?'urgent':''}`}><div className="nxos-email-hdr"><strong>{garble(email.from,burnout)}</strong>{email.urgent&&<span className="nxos-urgent-badge">!</span>}<span className="nxos-email-timer">⏱{Math.floor(rem)}s</span></div><div className="nxos-email-subject">{garble(email.subject,burnout)}</div><div className="nxos-email-body">{garble(email.body,burnout)}</div><div className="nxos-email-actions"><button className="nxos-btn" onClick={()=>{dismissEmail(email.id);playBlip()}}>OK</button><button className="nxos-btn" onClick={()=>{dismissEmail(email.id);playBlip()}}>Ignore</button></div></div>
       )})}
       {read.map(email => <div key={email.id} className="nxos-email read"><strong>{email.from}</strong> — {email.subject}</div>)}
     </div>
